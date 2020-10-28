@@ -42,7 +42,6 @@ if (config.runsInWidget) {
 } else {
   const appleDate = new Date("2001/01/01");
   const timestamp = (new Date().getTime() - appleDate.getTime()) / 1000;
-  console.log(timestamp);
   const callback = new CallbackURL("calshow:" + timestamp);
   callback.open();
   Script.complete();
@@ -334,13 +333,14 @@ function formatEvent(stack, event, color, opacity) {
   let eventLine = stack.addStack();
 
   if (showCalendarBullet) {
-    // show calendar bulet in front of event name
+    // show calendar bullet in front of event name
     addWidgetTextLine(eventLine, "● ", {
       color: event.calendar.color.hex,
       font: Font.mediumSystemFont(14),
       lineLimit: 1,
     });
   }
+
   // event title
   addWidgetTextLine(eventLine, event.title, {
     color,
@@ -356,7 +356,7 @@ function formatEvent(stack, event, color, opacity) {
   }
 
   const today = new Date().getDate();
-  const eventDate = new Date(event.startDate).getDate();
+  const eventDate = event.startDate.getDate();
   // if a future event is not today, we want to show it's date
   if (eventDate !== today) {
     time = `${eventDate}${getSuffix(eventDate)} ${time}`;
