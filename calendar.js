@@ -1,6 +1,3 @@
-// Variables used by Scriptable.
-// These must be at the very top of the file. Do not edit.
-// icon-color: orange; icon-glyph: calendar-alt;
 // use true to initially give Scriptable calendar access
 // use false to open Calendar when script is run - when tapping on the widget
 const debug = false;
