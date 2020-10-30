@@ -9,10 +9,16 @@ const params = JSON.parse(args.widgetParameter) || { bg: "1121.jpg" };
 // parameter config would look like this:
 // { "bg": "2111.jpg", "view": "events" }
 const imageName = params.bg;
-const backgroundColor = "#000000";
-const currentDayColor = "#000000";
+const widgetBackgroundColor = "#000000";
+// background color for today
+const todayColor = "#ffffff";
+// background for all other days, only applicable if showEventCircles is true
+const eventCircleColor = "#000000";
+const todayTextColor = "#000000";
+const dateTextColor = "#ffffff";
+// color for events
 const textColor = "#ffffff";
-// opacity value for weekends and times
+// opacity value for weekends and event times
 const opacity = 0.7;
 // choose either a split view or show only one of them
 const showEventsView = params.view ? params.view === "events" : true;
@@ -27,6 +33,8 @@ const startWeekOnSunday = false;
 const showEventsForWholeWeek = false;
 // show full title or truncate to a single line
 const showCompleteTitle = false;
+// show a circle behind each date that has an event then
+const showEventCircles = true;
 
 if (config.runsInWidget) {
   let widget = await createWidget();
@@ -46,7 +54,7 @@ if (config.runsInWidget) {
 
 async function createWidget() {
   let widget = new ListWidget();
-  widget.backgroundColor = new Color(backgroundColor);
+  widget.widgetBackgroundColor = new Color(widgetBackgroundColor);
   setWidgetBackground(widget, imageName);
   widget.setPadding(16, 16, 16, 16);
 
@@ -57,7 +65,7 @@ async function createWidget() {
     await buildEventsView(globalStack);
   }
   if (showCalendarView) {
-    buildCalendarView(globalStack);
+    await buildCalendarView(globalStack);
   }
 
   return widget;
@@ -114,8 +122,7 @@ async function buildEventsView(stack) {
       }
     }
   } else {
-    const text = showEventsForWholeWeek ? "this week" : "today";
-    addWidgetTextLine(leftStack, `No more events ${text}.`, {
+    addWidgetTextLine(leftStack, `No more events.`, {
       color: textColor,
       opacity,
       font: Font.regularSystemFont(15),
@@ -131,7 +138,7 @@ async function buildEventsView(stack) {
  *
  * @param  {WidgetStack} stack - onto which the calendar is built
  */
-function buildCalendarView(stack) {
+async function buildCalendarView(stack) {
   const rightStack = stack.addStack();
   rightStack.layoutVertically();
 
@@ -160,6 +167,8 @@ function buildCalendarView(stack) {
 
   const month = buildMonthVertical();
 
+  const { eventCounts, intensity } = await countEvents();
+
   for (let i = 0; i < month.length; i += 1) {
     let weekdayStack = calendarStack.addStack();
     weekdayStack.layoutVertically();
@@ -169,12 +178,27 @@ function buildCalendarView(stack) {
       dayStack.size = new Size(spacing, spacing);
       dayStack.centerAlignContent();
 
+      // if the day is today, highlight it
       if (month[i][j] === date.getDate().toString()) {
-        const highlightedDate = getHighlightedDate(
-          date.getDate().toString(),
-          currentDayColor
+        const highlightedDate = getDateImage(
+          month[i][j],
+          todayColor,
+          todayTextColor,
+          showEventCircles
+            ? eventCounts[parseInt(month[i][j]) - 1] * intensity
+            : 1
         );
         dayStack.addImage(highlightedDate);
+      } else if (j > 0 && month[i][j] !== " ") {
+        const dateImage = getDateImage(
+          month[i][j],
+          eventCircleColor,
+          dateTextColor,
+          showEventCircles
+            ? eventCounts[parseInt(month[i][j]) - 1] * intensity
+            : 0
+        );
+        dayStack.addImage(dateImage);
       } else {
         addWidgetTextLine(dayStack, `${month[i][j]}`, {
           color: textColor,
@@ -185,6 +209,40 @@ function buildCalendarView(stack) {
       }
     }
   }
+}
+
+async function countEvents() {
+  const today = new Date();
+  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const lastOfMonth = new Date(
+    new Date(firstOfMonth).setMonth(firstOfMonth.getMonth() + 1)
+  );
+
+  let events = await CalendarEvent.between(firstOfMonth, lastOfMonth);
+
+  const eventCounts = events
+    .map((event) => event.startDate.getDate())
+    .reduce(
+      (acc, date) => {
+        // 0 indexed, so date in array is at post date-1
+        acc[date - 1] = acc[date - 1] + 1;
+        return acc;
+      },
+      Array.from(Array(31), () => 0)
+    );
+
+  const max = Math.max(...eventCounts);
+  const min = Math.min(...eventCounts);
+
+  // calculate an intensity coefficient based on the events' range for the
+  // current month. If the range is from 1 to 6, the coefficient is 0.17, the
+  // event background's alpha value will be 0.17 * numEvents that day
+  let intensity = 1 / (max - min + 1);
+  // for a low range the intensity would be closer to 1, so we limit the
+  // intensity at most to 0.2
+  intensity = intensity > 0.2 ? 0.2 : intensity;
+
+  return { eventCounts, intensity };
 }
 
 /**
@@ -208,7 +266,7 @@ function isWeekend(index) {
 
 /**
  * Creates an array of arrays, where the inner arrays include the same weekdays
- * along with an identifier in 0 position
+ * along with a weekday identifier in the 0th position
  * [
  *   [ 'M', ' ', '7', '14', '21', '28' ],
  *   [ 'T', '1', '8', '15', '22', '29' ],
@@ -219,9 +277,9 @@ function isWeekend(index) {
  * @returns {Array<Array<string>>}
  */
 function buildMonthVertical() {
-  const date = new Date();
-  const firstDayStack = new Date(date.getFullYear(), date.getMonth(), 1);
-  const lastDayStack = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  const today = new Date();
+  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
   let month = [["M"], ["T"], ["W"], ["T"], ["F"], ["S"]];
   let index = 1;
@@ -238,12 +296,12 @@ function buildMonthVertical() {
   let dayStackCounter = 0;
 
   // fill with empty slots
-  for (; index < firstDayStack.getDay(); index += 1) {
+  for (; index < firstOfMonth.getDay(); index += 1) {
     month[index - offset].push(" ");
     dayStackCounter = (dayStackCounter + 1) % 7;
   }
 
-  for (let date = 1; date <= lastDayStack.getDate(); date += 1) {
+  for (let date = 1; date <= lastOfMonth.getDate(); date += 1) {
     month[dayStackCounter].push(`${date}`);
     dayStackCounter = (dayStackCounter + 1) % 7;
   }
@@ -262,26 +320,31 @@ function buildMonthVertical() {
 }
 
 /**
- * Draws a circle with a date on it for highlighting in calendar view
+ * Creates images for dates, depending on the number of events that day
  *
- * @param  {string} date to draw into the circle
+ * @param  {string} date - to draw into the circle
+ * @param  {string} color - of the background
+ * @param  {number} intensity - a calculated coefficient for alpha value
+ * @param  {boolean} isToday - is it today's date, for highlighting
  *
  * @returns {Image} a circle with the date
  */
-function getHighlightedDate(date, color) {
+function getDateImage(date, backgroundColor, textColor, intensity) {
   const drawing = new DrawContext();
   drawing.respectScreenScale = true;
   const size = 50;
   drawing.size = new Size(size, size);
   drawing.opaque = false;
-  drawing.setFillColor(new Color(color));
+
+  drawing.setFillColor(new Color(backgroundColor, intensity));
   drawing.fillEllipse(new Rect(1, 1, size - 2, size - 2));
+
   drawing.setFont(Font.boldSystemFont(25));
   drawing.setTextAlignedCenter();
-  drawing.setTextColor(new Color("#ffffff"));
+  drawing.setTextColor(new Color(textColor));
   drawing.drawTextInRect(date, new Rect(0, 10, size, size));
-  const currentDayImg = drawing.getImage();
-  return currentDayImg;
+
+  return drawing.getImage();
 }
 
 /**
@@ -359,6 +422,7 @@ function formatEvent(stack, event, color, opacity) {
     time = `${eventDate}${getSuffix(eventDate)} ${time}`;
   }
 
+  // event time
   addWidgetTextLine(stack, time, {
     color,
     opacity,
