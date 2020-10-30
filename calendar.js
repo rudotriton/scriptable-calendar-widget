@@ -3,7 +3,7 @@
 const debug = false;
 
 // get widget params
-const params = JSON.parse(args.widgetParameter) || { bg: "1121.jpg" };
+const params = JSON.parse(args.widgetParameter) || { bg: "transparent.jpg" };
 // a separate image can be specified per widget in widget params:
 // Long press on widget -> Edit Widget -> Parameter
 // parameter config would look like this:
@@ -11,9 +11,9 @@ const params = JSON.parse(args.widgetParameter) || { bg: "1121.jpg" };
 const imageName = params.bg;
 const widgetBackgroundColor = "#000000";
 // background color for today
-const todayColor = "#ffffff";
+const todayColor = "#F24747";
 // background for all other days, only applicable if showEventCircles is true
-const eventCircleColor = "#000000";
+const eventCircleColor = "#304F9E";
 const todayTextColor = "#000000";
 const dateTextColor = "#ffffff";
 // color for events
@@ -397,7 +397,7 @@ function formatEvent(stack, event, color, opacity) {
     addWidgetTextLine(eventLine, "● ", {
       color: event.calendar.color.hex,
       font: Font.mediumSystemFont(14),
-      lineLimit: 1,
+      lineLimit: showCompleteTitle ? 0 : 1,
     });
   }
 
