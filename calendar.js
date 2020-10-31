@@ -54,7 +54,7 @@ if (config.runsInWidget) {
 
 async function createWidget() {
   let widget = new ListWidget();
-  widget.widgetBackgroundColor = new Color(widgetBackgroundColor);
+  widget.backgroundColor = new Color(widgetBackgroundColor);
   setWidgetBackground(widget, imageName);
   widget.setPadding(16, 16, 16, 16);
 
@@ -93,6 +93,7 @@ async function buildEventsView(stack) {
   } else {
     events = await CalendarEvent.today([]);
   }
+
   const futureEvents = [];
   // if we show events for the whole week, then we need to filter allDay events
   // to not show past allDay events
