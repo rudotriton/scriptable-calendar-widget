@@ -148,7 +148,7 @@ async function buildCalendarView(stack) {
   dateFormatter.dateFormat = "MMMM";
 
   // if calendar is on a small widget make it a bit smaller to fit
-  const spacing = config.widgetFamily === "small" ? 18 : 20;
+  const spacing = config.widgetFamily === "small" ? 18 : 19;
 
   // Current month line
   const monthLine = rightStack.addStack();
@@ -159,9 +159,6 @@ async function buildCalendarView(stack) {
     textSize: 14,
     font: Font.boldSystemFont(13),
   });
-
-  // between the month name and the week calendar
-  rightStack.addSpacer(5);
 
   const calendarStack = rightStack.addStack();
   calendarStack.spacing = 2;
@@ -286,10 +283,14 @@ function buildMonthVertical() {
   let index = 1;
   let offset = 1;
 
+  // weekdays are 0 indexed starting with sunday
+  let firstDay = firstOfMonth.getDay() !== 0 ? firstOfMonth.getDay() : 7;
+
   if (startWeekOnSunday) {
     month.unshift(["S"]);
     index = 0;
     offset = 0;
+    firstDay = firstDay % 7;
   } else {
     month.push(["S"]);
   }
@@ -297,7 +298,7 @@ function buildMonthVertical() {
   let dayStackCounter = 0;
 
   // fill with empty slots
-  for (; index < firstOfMonth.getDay(); index += 1) {
+  for (; index < firstDay; index += 1) {
     month[index - offset].push(" ");
     dayStackCounter = (dayStackCounter + 1) % 7;
   }
