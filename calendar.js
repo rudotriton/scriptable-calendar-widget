@@ -182,9 +182,7 @@ async function buildCalendarView(stack) {
           month[i][j],
           todayColor,
           todayTextColor,
-          showEventCircles
-            ? eventCounts[parseInt(month[i][j]) - 1] * intensity
-            : 1
+          1
         );
         dayStack.addImage(highlightedDate);
       } else if (j > 0 && month[i][j] !== " ") {
