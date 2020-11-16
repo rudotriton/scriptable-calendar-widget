@@ -30,7 +30,8 @@
 - `showAllDayEvents` - would either show or hide all day events.
 - `showCalendarBullet` - would show a `●` in front of the event name which matches the calendar color from which the event originates.
 - `startWeekOnSunday` - would start the week either on a Sunday or a Monday.
-- `showEventsForWholeWeek` - would either show all future events for today or for the whole week.
+- `showEventsOnlyForToday` - would either limit the events to today or a specified number of future days with `nextNumOfDays`
+- `nextNumOfDays` - this allows specifying how far into the future to look for events. There is probably a limit by iOS on how far into the future it can look.
 - `showCompleteTitle` - would truncate long event titles so that they can fit onto a single line to fit more events into the view.
 - `showEventCircles` - adds colored background for all days that have an event. The color intensity is based on how many events are that day.
 
