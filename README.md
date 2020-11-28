@@ -21,7 +21,9 @@
 
 ---
 
-- the beginning of the script shows the hex colors for various parts which can be modified to your liking:
+- Tapping on the widget launches a calendar app (as long as `const debug = false`), by default it launches the iOS Calendar app, however it can be changed to anything as long as the app supports callback URLs.
+  - `const callback = new CallbackURL("calshow:" + timestamp);` - opens iOS Calendar. Changing the `calshow` to something else would open other apps. E.g. for Google Calendar it is `googlecalendar`, for Fantastical it is `x-fantastical3`.
+- The beginning of the script shows the hex colors for various parts which can be modified to your liking:
   - widget's background color
   - current day's background and foreground color
   - background and foreground colors for other days
