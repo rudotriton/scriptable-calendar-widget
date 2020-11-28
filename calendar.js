@@ -30,7 +30,9 @@ const showCalendarBullet = true;
 // week starts on a Sunday
 const startWeekOnSunday = false;
 // show events for the whole week or limit just to the day
-const showEventsForWholeWeek = false;
+const showEventsOnlyForToday = false;
+// shows events for that many days if showEventsOnlyForToday is false
+const nextNumOfDays = 7;
 // show full title or truncate to a single line
 const showCompleteTitle = false;
 // show a circle behind each date that has an event then
@@ -88,10 +90,12 @@ async function buildEventsView(stack) {
   const date = new Date();
 
   let events = [];
-  if (showEventsForWholeWeek) {
-    events = await CalendarEvent.thisWeek([]);
-  } else {
+  if (showEventsOnlyForToday) {
     events = await CalendarEvent.today([]);
+  } else {
+    let dateLimit = new Date();
+    dateLimit.setDate(dateLimit.getDate() + nextNumOfDays);
+    events = await CalendarEvent.between(date, dateLimit);
   }
 
   const futureEvents = [];
