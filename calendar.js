@@ -221,11 +221,25 @@ async function countEvents() {
   let events = await CalendarEvent.between(firstOfMonth, lastOfMonth);
 
   const eventCounts = events
-    .map((event) => event.startDate.getDate())
+    .map((event) => {
+      if (event.isAllDay) {
+        const firstDay = event.startDate.getDate();
+        const lastDay = event.endDate.getDate();
+        let days = [];
+        for (let i = firstDay; i < lastDay; i += 1) {
+          days.push(i);
+        }
+        return days;
+      } else {
+        return [event.startDate.getDate()];
+      }
+    })
     .reduce(
-      (acc, date) => {
-        // 0 indexed, so date in array is at post date-1
-        acc[date - 1] = acc[date - 1] + 1;
+      (acc, dates) => {
+        dates.forEach((date) => {
+          // 0 indexed, so date in array is at post date-1
+          acc[date - 1] = acc[date - 1] + 1;
+        });
         return acc;
       },
       Array.from(Array(31), () => 0)
