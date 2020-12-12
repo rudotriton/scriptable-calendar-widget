@@ -1,7 +1,7 @@
 # Scriptable Calendar Widget
 
 <p align="center" >
-    <img width="500" alt="scriptable calendar" src ="./assets/widget.jpg">
+    <img width="500" alt="scriptable calendar" src ="./assets/widget.png">
 </p>
 
 - [Scriptable Calendar Widget](#scriptable-calendar-widget)
@@ -40,7 +40,7 @@
 ## Small widgets
 
 <p align="center" >
-    <img width="350" alt="scriptable calendar" src ="./assets/small-widgets.jpg">
+    <img width="350" alt="scriptable calendar" src ="./assets/small-widgets.png">
 </p>
 
 The script also supports small widgets or a medium widget with just one part. In this case the the widget parameter (long press on the widget -> edit widget -> parameter) should be set to something like:
