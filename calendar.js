@@ -16,6 +16,12 @@ const todayColor = "#F24747";
 const eventCircleColor = "#304F9E";
 const todayTextColor = "#000000";
 const dateTextColor = "#ffffff";
+
+// weekend colors
+const weekendLetters = "#ffffff";
+const weekendLetterOpacity = 0.7;
+const weekendDates = "#ffffff";
+
 // color for events
 const textColor = "#ffffff";
 // opacity value for weekends and event times
@@ -190,19 +196,21 @@ async function buildCalendarView(stack) {
         );
         dayStack.addImage(highlightedDate);
       } else if (j > 0 && month[i][j] !== " ") {
+        // every other date
         const dateImage = getDateImage(
           month[i][j],
           eventCircleColor,
-          dateTextColor,
+          isWeekend(i) ? weekendDates : dateTextColor,
           showEventCircles
             ? eventCounts[parseInt(month[i][j]) - 1] * intensity
             : 0
         );
         dayStack.addImage(dateImage);
       } else {
+        // MTWTFSS line and empty dates from other months
         addWidgetTextLine(dayStack, `${month[i][j]}`, {
-          color: textColor,
-          opacity: isWeekend(i) ? opacity : 1,
+          color: isWeekend(i) ? weekendLetters : textColor,
+          opacity: isWeekend(i) ? weekendLetterOpacity : 1,
           font: Font.boldSystemFont(10),
           align: "center",
         });

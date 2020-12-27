@@ -27,6 +27,7 @@
   - widget's background color
   - current day's background and foreground color
   - background and foreground colors for other days
+  - foregruond colors for weekends
   - text color
 - To get an image that can then be used to have a "transparent" widget background use [this](https://gist.github.com/mzeryck/3a97ccd1e059b3afa3c6666d27a496c9#gistcomment-3468585) script and save it to the _Scriptable_ folder on iCloud. Then set either the widget parameter (long press on the widget -> edit widget -> parameter) to `{ "bg": "my-image.jpg"}` where `my-image` is the name of your transparent backgorund **OR** change the line which has `{ bg: "1121.jpg" }` to include your image name.
 - `showAllDayEvents` - would either show or hide all day events.
