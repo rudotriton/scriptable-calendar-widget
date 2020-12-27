@@ -232,7 +232,12 @@ async function countEvents() {
     .map((event) => {
       if (event.isAllDay) {
         const firstDay = event.startDate.getDate();
-        const lastDay = event.endDate.getDate();
+        let lastDay = event.endDate.getDate();
+        const last =
+          new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate() + 1;
+        // if the last day goes into the next month, it can be less than first
+        // in this case we count to the end of the month
+        lastDay = lastDay < firstDay ? last : lastDay;
         let days = [];
         for (let i = firstDay; i < lastDay; i += 1) {
           days.push(i);
