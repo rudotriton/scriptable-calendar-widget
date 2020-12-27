@@ -222,22 +222,22 @@ async function buildCalendarView(stack) {
 async function countEvents() {
   const today = new Date();
   const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const lastOfMonth = new Date(
+  const firstOfNextMonth = new Date(
     new Date(firstOfMonth).setMonth(firstOfMonth.getMonth() + 1)
   );
 
-  let events = await CalendarEvent.between(firstOfMonth, lastOfMonth);
+  let events = await CalendarEvent.between(firstOfMonth, firstOfNextMonth);
 
   const eventCounts = events
     .map((event) => {
       if (event.isAllDay) {
         const firstDay = event.startDate.getDate();
         let lastDay = event.endDate.getDate();
-        const last =
+        const lastOfMonth =
           new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate() + 1;
         // if the last day goes into the next month, it can be less than first
         // in this case we count to the end of the month
-        lastDay = lastDay < firstDay ? last : lastDay;
+        lastDay = lastDay < firstDay ? lastOfMonth : lastDay;
         let days = [];
         for (let i = firstDay; i < lastDay; i += 1) {
           days.push(i);
