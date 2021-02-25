@@ -1,4 +1,5 @@
 import settings from "settings";
+import buildMonth from "./buildMonth";
 
 main();
 
@@ -138,7 +139,7 @@ async function buildCalendarView(stack) {
   const calendarStack = rightStack.addStack();
   calendarStack.spacing = 2;
 
-  const month = buildMonthVertical();
+  const { month } = buildMonth(new Date(), settings);
 
   const { eventCounts, intensity } = await countEvents();
 
