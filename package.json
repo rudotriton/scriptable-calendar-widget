@@ -1,0 +1,23 @@
+{
+  "name": "scriptable-calendar-widget",
+  "version": "0.0.1",
+  "description": "A script for iOS Scriptable app.",
+  "main": "calendar.js",
+  "scripts": {
+    "build": "esbuild src/calendar.js --bundle --platform=node --target=node15.0 --outfile=script.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rudotriton/scriptable-calendar-widget.git"
+  },
+  "keywords": [],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rudotriton/scriptable-calendar-widget/issues"
+  },
+  "homepage": "https://github.com/rudotriton/scriptable-calendar-widget#readme",
+  "devDependencies": {
+    "esbuild": "^0.8.52",
+    "prettier": "^2.2.1"
+  }
+}

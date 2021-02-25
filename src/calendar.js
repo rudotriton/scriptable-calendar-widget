@@ -1,78 +1,38 @@
-// use true to initially give Scriptable calendar access
-// use false to open Calendar when script is run - when tapping on the widget
-const debug = false;
+import settings from "settings";
 
-// get widget params
-const params = JSON.parse(args.widgetParameter) || { bg: "transparent.jpg" };
-// a separate image can be specified per widget in widget params:
-// Long press on widget -> Edit Widget -> Parameter
-// parameter config would look like this:
-// { "bg": "2111.jpg", "view": "events" }
-const imageName = params.bg;
-const widgetBackgroundColor = "#000000";
-// background color for today
-const todayColor = "#F24747";
-// background for all other days, only applicable if showEventCircles is true
-const eventCircleColor = "#304F9E";
-const todayTextColor = "#000000";
-const dateTextColor = "#ffffff";
+main();
 
-// weekend colors
-const weekendLetters = "#ffffff";
-const weekendLetterOpacity = 0.7;
-const weekendDates = "#ffffff";
-
-// color for events
-const textColor = "#ffffff";
-// opacity value for weekends and event times
-const opacity = 0.7;
-// choose either a split view or show only one of them
-const showEventsView = params.view ? params.view === "events" : true;
-const showCalendarView = params.view ? params.view === "cal" : true;
-// show or hide all day events
-const showAllDayEvents = true;
-// show calendar colored bullet for each event
-const showCalendarBullet = true;
-// week starts on a Sunday
-const startWeekOnSunday = false;
-// show events for the whole week or limit just to the day
-const showEventsOnlyForToday = false;
-// shows events for that many days if showEventsOnlyForToday is false
-const nextNumOfDays = 7;
-// show full title or truncate to a single line
-const showCompleteTitle = false;
-// show a circle behind each date that has an event then
-const showEventCircles = true;
-
-if (config.runsInWidget) {
-  let widget = await createWidget();
-  Script.setWidget(widget);
-  Script.complete();
-} else if (debug) {
-  Script.complete();
-  let widget = await createWidget();
-  await widget.presentMedium();
-} else {
-  const appleDate = new Date("2001/01/01");
-  const timestamp = (new Date().getTime() - appleDate.getTime()) / 1000;
-  const callback = new CallbackURL("calshow:" + timestamp);
-  callback.open();
-  Script.complete();
+async function main() {
+  if (config.runsInWidget) {
+    let widget = await createWidget();
+    Script.setWidget(widget);
+    Script.complete();
+  } else if (settings.debug) {
+    Script.complete();
+    let widget = await createWidget();
+    await widget.presentMedium();
+  } else {
+    const appleDate = new Date("2001/01/01");
+    const timestamp = (new Date().getTime() - appleDate.getTime()) / 1000;
+    const callback = new CallbackURL("calshow:" + timestamp);
+    callback.open();
+    Script.complete();
+  }
 }
 
 async function createWidget() {
   let widget = new ListWidget();
-  widget.backgroundColor = new Color(widgetBackgroundColor);
-  setWidgetBackground(widget, imageName);
+  widget.backgroundColor = new Color(settings.widgetBackgroundColor);
+  setWidgetBackground(widget, settings.imageName);
   widget.setPadding(16, 16, 16, 16);
 
   // layout horizontally
   const globalStack = widget.addStack();
 
-  if (showEventsView) {
+  if (settings.showEventsView) {
     await buildEventsView(globalStack);
   }
-  if (showCalendarView) {
+  if (settings.showCalendarView) {
     await buildCalendarView(globalStack);
   }
 
@@ -96,11 +56,11 @@ async function buildEventsView(stack) {
   const date = new Date();
 
   let events = [];
-  if (showEventsOnlyForToday) {
+  if (settings.showEventsOnlyForToday) {
     events = await CalendarEvent.today([]);
   } else {
     let dateLimit = new Date();
-    dateLimit.setDate(dateLimit.getDate() + nextNumOfDays);
+    dateLimit.setDate(dateLimit.getDate() + settings.nextNumOfDays);
     events = await CalendarEvent.between(date, dateLimit);
   }
 
@@ -110,7 +70,7 @@ async function buildEventsView(stack) {
   // if allDayEvent's start date is later than a day ago from now then show it
   for (const event of events) {
     if (
-      (showAllDayEvents &&
+      (settings.showAllDayEvents &&
         event.isAllDay &&
         event.startDate.getTime() >
           new Date(new Date().setDate(new Date().getDate() - 1))) ||
@@ -126,7 +86,12 @@ async function buildEventsView(stack) {
     // show the next 3 events at most
     const numEvents = futureEvents.length > 3 ? 3 : futureEvents.length;
     for (let i = 0; i < numEvents; i += 1) {
-      formatEvent(leftStack, futureEvents[i], textColor, opacity);
+      formatEvent(
+        leftStack,
+        futureEvents[i],
+        settings.textColor,
+        settings.opacity
+      );
       // don't add a spacer after the last event
       if (i < numEvents - 1) {
         leftStack.addSpacer(8);
@@ -134,8 +99,8 @@ async function buildEventsView(stack) {
     }
   } else {
     addWidgetTextLine(leftStack, `No more events.`, {
-      color: textColor,
-      opacity,
+      color: settings.textColor,
+      opacity: settings.opacity,
       font: Font.regularSystemFont(15),
       align: "left",
     });
@@ -165,7 +130,7 @@ async function buildCalendarView(stack) {
   // since dates are centered in their squares we need to add some space
   monthLine.addSpacer(4);
   addWidgetTextLine(monthLine, dateFormatter.string(date).toUpperCase(), {
-    color: textColor,
+    color: settings.textColor,
     textSize: 14,
     font: Font.boldSystemFont(13),
   });
@@ -190,8 +155,8 @@ async function buildCalendarView(stack) {
       if (month[i][j] === date.getDate().toString()) {
         const highlightedDate = getDateImage(
           month[i][j],
-          todayColor,
-          todayTextColor,
+          settings.todayColor,
+          settings.todayTextColor,
           1
         );
         dayStack.addImage(highlightedDate);
@@ -199,9 +164,9 @@ async function buildCalendarView(stack) {
         // every other date
         const dateImage = getDateImage(
           month[i][j],
-          eventCircleColor,
-          isWeekend(i) ? weekendDates : dateTextColor,
-          showEventCircles
+          settings.eventCircleColor,
+          isWeekend(i) ? settings.weekendDates : settings.dateTextColor,
+          settings.showEventCircles
             ? eventCounts[parseInt(month[i][j]) - 1] * intensity
             : 0
         );
@@ -209,8 +174,8 @@ async function buildCalendarView(stack) {
       } else {
         // MTWTFSS line and empty dates from other months
         addWidgetTextLine(dayStack, `${month[i][j]}`, {
-          color: isWeekend(i) ? weekendLetters : textColor,
-          opacity: isWeekend(i) ? weekendLetterOpacity : 1,
+          color: isWeekend(i) ? settings.weekendLetters : settings.textColor,
+          opacity: isWeekend(i) ? settings.weekendLetterOpacity : 1,
           font: Font.boldSystemFont(10),
           align: "center",
         });
@@ -279,7 +244,7 @@ async function countEvents() {
  * @param  {number} index
  */
 function isWeekend(index) {
-  if (startWeekOnSunday) {
+  if (settings.startWeekOnSunday) {
     switch (index) {
       case 0:
       case 6:
@@ -315,7 +280,7 @@ function buildMonthVertical() {
   // weekdays are 0 indexed starting with sunday
   let firstDay = firstOfMonth.getDay() !== 0 ? firstOfMonth.getDay() : 7;
 
-  if (startWeekOnSunday) {
+  if (settings.startWeekOnSunday) {
     month.unshift(["S"]);
     index = 0;
     offset = 0;
@@ -423,12 +388,12 @@ function getSuffix(date) {
 function formatEvent(stack, event, color, opacity) {
   let eventLine = stack.addStack();
 
-  if (showCalendarBullet) {
+  if (settings.showCalendarBullet) {
     // show calendar bullet in front of event name
     addWidgetTextLine(eventLine, "● ", {
       color: event.calendar.color.hex,
       font: Font.mediumSystemFont(14),
-      lineLimit: showCompleteTitle ? 0 : 1,
+      lineLimit: settings.showCompleteTitle ? 0 : 1,
     });
   }
 
@@ -436,7 +401,7 @@ function formatEvent(stack, event, color, opacity) {
   addWidgetTextLine(eventLine, event.title, {
     color,
     font: Font.mediumSystemFont(14),
-    lineLimit: showCompleteTitle ? 0 : 1,
+    lineLimit: settings.showCompleteTitle ? 0 : 1,
   });
   // event duration
   let time;
