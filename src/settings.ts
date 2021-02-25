@@ -52,29 +52,29 @@ const settings: Settings = {
 };
 
 export interface Settings {
-  debug: boolean,
-  imageName: string,
-  widgetBackgroundColor: string,
-  todayColor: string,
-  eventCircleColor: string,
-  todayTextColor: string,
-  dateTextColor: string,
-  locale: string,
-  weekendLetters: string,
-  weekendLetterOpacity: number,
-  weekendDates: string,
-  textColor: string,
-  opacity: number,
-  showEventsView: boolean,
-  showCalendarView: boolean,
-  showAllDayEvents: boolean,
-  showCalendarBullet: boolean,
-  startWeekOnSunday: boolean,
-  showEventsOnlyForToday: boolean,
-  nextNumOfDays: number,
-  showCompleteTitle: boolean,
-  showEventCircles: boolean,
-  showPrevMonth: boolean,
-};
+  debug: boolean;
+  imageName: string;
+  widgetBackgroundColor: string;
+  todayColor: string;
+  eventCircleColor: string;
+  todayTextColor: string;
+  dateTextColor: string;
+  locale: string;
+  weekendLetters: string;
+  weekendLetterOpacity: number;
+  weekendDates: string;
+  textColor: string;
+  opacity: number;
+  showEventsView: boolean;
+  showCalendarView: boolean;
+  showAllDayEvents: boolean;
+  showCalendarBullet: boolean;
+  startWeekOnSunday: boolean;
+  showEventsOnlyForToday: boolean;
+  nextNumOfDays: number;
+  showCompleteTitle: boolean;
+  showEventCircles: boolean;
+  showPrevMonth: boolean;
+}
 
 export default settings;

@@ -1,6 +1,36 @@
 {
-  "extends": "@scriptable-ios",
+  "plugins": ["@typescript-eslint", "import"],
+  "extends": [
+    "plugin:@typescript-eslint/recommended",
+    "prettier",
+    "plugin:prettier/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
+    "ecmaVersion": 11,
     "sourceType": "module"
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "moduleDirectory": ["node_modules", "src/"],
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      }
+    }
+  },
+  "rules": {
+    "quotes": "off",
+    "object-curly-newline": "off",
+    "comma-dangle": "off",
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "jsx": "never",
+        "ts": "never",
+        "tsx": "never"
+      }
+    ]
   }
 }

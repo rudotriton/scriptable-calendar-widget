@@ -2,7 +2,7 @@
  * Adds WidgetText to WidgetStack
  *
  */
-export function addWidgetTextLine(
+function addWidgetTextLine(
   widget: WidgetStack,
   text: string,
   {
@@ -10,16 +10,17 @@ export function addWidgetTextLine(
     textSize = 12,
     opacity = 1,
     align,
-    font = "",
+    font,
     lineLimit = 0,
   }: {
-    color: string,
-    textSize: number,
-    opacity: number,
-    align: string,
-    font: string,
-    lineLimit: number
-  }): void {
+    color?: string;
+    textSize?: number;
+    opacity?: number;
+    align?: string;
+    font?: Font;
+    lineLimit?: number;
+  }
+): void {
   let textLine = widget.addText(text);
   textLine.textColor = new Color(color, 1);
   textLine.lineLimit = lineLimit;
@@ -44,3 +45,5 @@ export function addWidgetTextLine(
       break;
   }
 }
+
+export default addWidgetTextLine;

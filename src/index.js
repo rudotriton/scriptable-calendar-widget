@@ -1,7 +1,8 @@
 import settings from "./settings";
 import buildMonth from "./buildMonth";
 import isWeekend from "./isWeekend";
-import { addWidgetTextLine } from "./addWidgetTextLine";
+import addWidgetTextLine from "./addWidgetTextLine";
+import formatEvent from "./formatEvent";
 
 main();
 
@@ -266,87 +267,4 @@ function getDateImage(date, backgroundColor, textColor, intensity) {
   drawing.drawTextInRect(date, new Rect(0, 10, size, size));
 
   return drawing.getImage();
-}
-
-/**
- * formats the event times into just hours
- *
- * @param  {Date} date
- *
- * @returns {string} time
- */
-function formatTime(date) {
-  let dateFormatter = new DateFormatter();
-  dateFormatter.useNoDateStyle();
-  dateFormatter.useShortTimeStyle();
-  return dateFormatter.string(date);
-}
-
-/**
- * get suffix for a given date
- *
- * @param {number} date
- *
- * @returns {string} suffix
- */
-function getSuffix(date) {
-  if (date > 3 && date < 21) return "th";
-  switch (date % 10) {
-    case 1:
-      return "st";
-    case 2:
-      return "nd";
-    case 3:
-      return "rd";
-    default:
-      return "th";
-  }
-}
-
-/**
- * Adds a event name along with start and end times to widget stack
- *
- * @param  {WidgetStack} stack - onto which the event is added
- * @param  {CalendarEvent} event - an event to add on the stack
- * @param  {number} opacity - text opacity
- */
-function formatEvent(stack, event, color, opacity) {
-  let eventLine = stack.addStack();
-
-  if (settings.showCalendarBullet) {
-    // show calendar bullet in front of event name
-    addWidgetTextLine(eventLine, "● ", {
-      color: event.calendar.color.hex,
-      font: Font.mediumSystemFont(14),
-      lineLimit: settings.showCompleteTitle ? 0 : 1,
-    });
-  }
-
-  // event title
-  addWidgetTextLine(eventLine, event.title, {
-    color,
-    font: Font.mediumSystemFont(14),
-    lineLimit: settings.showCompleteTitle ? 0 : 1,
-  });
-  // event duration
-  let time;
-  if (event.isAllDay) {
-    time = "All Day";
-  } else {
-    time = `${formatTime(event.startDate)} - ${formatTime(event.endDate)}`;
-  }
-
-  const today = new Date().getDate();
-  const eventDate = event.startDate.getDate();
-  // if a future event is not today, we want to show it's date
-  if (eventDate !== today) {
-    time = `${eventDate}${getSuffix(eventDate)} ${time}`;
-  }
-
-  // event time
-  addWidgetTextLine(stack, time, {
-    color,
-    opacity,
-    font: Font.regularSystemFont(14),
-  });
 }

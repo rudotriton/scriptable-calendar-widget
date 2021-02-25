@@ -2,7 +2,7 @@ import getWeekLetters from "./getWeekLetters";
 import { Settings } from "./settings";
 
 interface MonthInfo {
-  month: string[][]
+  month: string[][];
 }
 
 /**
@@ -18,11 +18,7 @@ interface MonthInfo {
  */
 function buildMonth(
   today: Date = new Date(),
-  {
-    locale,
-    showPrevMonth = true,
-    startWeekOnSunday = false,
-  }: Partial<Settings>
+  { locale, showPrevMonth = true, startWeekOnSunday = false }: Partial<Settings>
 ): MonthInfo {
   const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
   const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);

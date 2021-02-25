@@ -7,7 +7,9 @@
  */
 function isWeekend(
   index: number,
-  { startWeekOnSunday }: { startWeekOnSunday: boolean; } = { startWeekOnSunday: false }
+  { startWeekOnSunday }: { startWeekOnSunday: boolean } = {
+    startWeekOnSunday: false,
+  }
 ): boolean {
   if (startWeekOnSunday) {
     switch (index) {

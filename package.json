@@ -1,5 +1,5 @@
 {
-  "name": "calendar",
+  "name": "scriptable-calendar-widget",
   "version": "0.0.1",
   "description": "A script for iOS Scriptable app.",
   "main": "calendar.js",
@@ -12,17 +12,22 @@
     "url": "git+https://github.com/rudotriton/scriptable-calendar-widget.git"
   },
   "keywords": [],
+  "author": "Raigo Jerva",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/rudotriton/scriptable-calendar-widget/issues"
   },
   "homepage": "https://github.com/rudotriton/scriptable-calendar-widget#readme",
   "devDependencies": {
-    "@scriptable-ios/eslint-config": "^1.5.1",
     "@types/scriptable-ios": "^1.6.1",
+    "@typescript-eslint/eslint-plugin": "^4.15.2",
+    "@typescript-eslint/parser": "^4.15.2",
     "esbuild": "^0.8.52",
-    "eslint": "^6.8.0",
+    "eslint": "^7.20.0",
     "eslint_d": "^10.0.3",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-prettier": "^3.3.1",
     "prettier": "^2.2.1",
     "ts-node-dev": "^1.1.6"
   }

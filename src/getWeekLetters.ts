@@ -8,7 +8,10 @@
  *
  * @returns {string[][]}
  */
-function getWeekLetters(locale: string = "en-US", startWeekOnSunday: boolean = false): string[][] {
+function getWeekLetters(
+  locale: string = "en-US",
+  startWeekOnSunday: boolean = false
+): string[][] {
   let week = [];
   for (let i = 1; i <= 7; i += 1) {
     // create days from Monday to Sunday
