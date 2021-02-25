@@ -1,0 +1,6 @@
+{
+  "extends": "@scriptable-ios",
+  "parserOptions": {
+    "sourceType": "module"
+  }
+}
