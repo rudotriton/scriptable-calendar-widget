@@ -4,7 +4,7 @@
   "description": "A script for iOS Scriptable app.",
   "main": "calendar.js",
   "scripts": {
-    "build": "esbuild src/calendar.js --bundle --platform=node --outfile=calendar.js",
+    "build": "esbuild src/index.js --bundle --platform=node --outfile=calendar.js",
     "dev": "ts-node-dev --respawn test.ts"
   },
   "repository": {

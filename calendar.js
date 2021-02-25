@@ -1,13 +1,14 @@
-// src/settings.js
+// src/settings.ts
 var params = JSON.parse(args.widgetParameter) || {bg: "transparent.jpg"};
 var settings = {
-  debug: false,
+  debug: true,
   imageName: params.bg,
   widgetBackgroundColor: "#000000",
   todayColor: "#F24747",
   eventCircleColor: "#304F9E",
   todayTextColor: "#000000",
   dateTextColor: "#ffffff",
+  locale: "en-US",
   weekendLetters: "#ffffff",
   weekendLetterOpacity: 0.7,
   weekendDates: "#ffffff",
@@ -21,9 +22,115 @@ var settings = {
   showEventsOnlyForToday: false,
   nextNumOfDays: 7,
   showCompleteTitle: false,
-  showEventCircles: true
+  showEventCircles: true,
+  showPrevMonth: true
 };
 var settings_default = settings;
+
+// src/getWeekLetters.ts
+function getWeekLetters(locale = "en-US", startWeekOnSunday = false) {
+  let week = [];
+  for (let i = 1; i <= 7; i += 1) {
+    const day = new Date(`2021-02-0${i}`);
+    week.push(day.toLocaleDateString(locale, {weekday: "long"}));
+  }
+  week = week.map((day) => [day.slice(0, 1).toUpperCase()]);
+  if (startWeekOnSunday) {
+    let sunday = week.pop();
+    week.unshift(sunday);
+  }
+  return week;
+}
+var getWeekLetters_default = getWeekLetters;
+
+// src/buildMonth.ts
+function buildMonth(today = new Date(), {
+  locale,
+  showPrevMonth = true,
+  startWeekOnSunday = false
+}) {
+  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  let month = getWeekLetters_default(locale);
+  let index = 1;
+  let offset = 1;
+  let firstDay = firstOfMonth.getDay() !== 0 ? firstOfMonth.getDay() : 7;
+  if (startWeekOnSunday) {
+    index = 0;
+    offset = 0;
+    firstDay = firstDay % 7;
+  }
+  let dayStackCounter = 0;
+  for (; index < firstDay; index += 1) {
+    if (showPrevMonth) {
+    } else {
+      month[index - offset].push(" ");
+    }
+    dayStackCounter = (dayStackCounter + 1) % 7;
+  }
+  for (let date = 1; date <= lastOfMonth.getDate(); date += 1) {
+    month[dayStackCounter].push(`${date}`);
+    dayStackCounter = (dayStackCounter + 1) % 7;
+  }
+  const length = month.reduce((acc, dayStacks) => dayStacks.length > acc ? dayStacks.length : acc, 0);
+  console.log(length);
+  month.forEach((dayStacks, index2) => {
+    while (dayStacks.length < length) {
+      month[index2].push(" ");
+    }
+  });
+  return {month};
+}
+var buildMonth_default = buildMonth;
+
+// src/isWeekend.ts
+function isWeekend(index, {startWeekOnSunday} = {startWeekOnSunday: false}) {
+  if (startWeekOnSunday) {
+    switch (index) {
+      case 0:
+      case 6:
+        return true;
+      default:
+        return false;
+    }
+  }
+  return index > 4;
+}
+var isWeekend_default = isWeekend;
+
+// src/addWidgetTextLine.ts
+function addWidgetTextLine(widget, text, {
+  color = "#ffffff",
+  textSize = 12,
+  opacity = 1,
+  align,
+  font = "",
+  lineLimit = 0
+}) {
+  let textLine = widget.addText(text);
+  textLine.textColor = new Color(color, 1);
+  textLine.lineLimit = lineLimit;
+  if (typeof font === "string") {
+    textLine.font = new Font(font, textSize);
+  } else {
+    textLine.font = font;
+  }
+  textLine.textOpacity = opacity;
+  switch (align) {
+    case "left":
+      textLine.leftAlignText();
+      break;
+    case "center":
+      textLine.centerAlignText();
+      break;
+    case "right":
+      textLine.rightAlignText();
+      break;
+    default:
+      textLine.leftAlignText();
+      break;
+  }
+}
 
 // src/calendar.js
 main();
@@ -112,7 +219,7 @@ async function buildCalendarView(stack) {
   });
   const calendarStack = rightStack.addStack();
   calendarStack.spacing = 2;
-  const month = buildMonthVertical();
+  const {month} = buildMonth_default(new Date(), settings_default);
   const {eventCounts, intensity} = await countEvents();
   for (let i = 0; i < month.length; i += 1) {
     let weekdayStack = calendarStack.addStack();
@@ -125,12 +232,12 @@ async function buildCalendarView(stack) {
         const highlightedDate = getDateImage(month[i][j], settings_default.todayColor, settings_default.todayTextColor, 1);
         dayStack.addImage(highlightedDate);
       } else if (j > 0 && month[i][j] !== " ") {
-        const dateImage = getDateImage(month[i][j], settings_default.eventCircleColor, isWeekend(i) ? settings_default.weekendDates : settings_default.dateTextColor, settings_default.showEventCircles ? eventCounts[parseInt(month[i][j]) - 1] * intensity : 0);
+        const dateImage = getDateImage(month[i][j], settings_default.eventCircleColor, isWeekend_default(i) ? settings_default.weekendDates : settings_default.dateTextColor, settings_default.showEventCircles ? eventCounts[parseInt(month[i][j]) - 1] * intensity : 0);
         dayStack.addImage(dateImage);
       } else {
         addWidgetTextLine(dayStack, `${month[i][j]}`, {
-          color: isWeekend(i) ? settings_default.weekendLetters : settings_default.textColor,
-          opacity: isWeekend(i) ? settings_default.weekendLetterOpacity : 1,
+          color: isWeekend_default(i) ? settings_default.weekendLetters : settings_default.textColor,
+          opacity: isWeekend_default(i) ? settings_default.weekendLetterOpacity : 1,
           font: Font.boldSystemFont(10),
           align: "center"
         });
@@ -168,51 +275,6 @@ async function countEvents() {
   let intensity = 1 / (max - min + 1);
   intensity = intensity > 0.2 ? 0.2 : intensity;
   return {eventCounts, intensity};
-}
-function isWeekend(index) {
-  if (settings_default.startWeekOnSunday) {
-    switch (index) {
-      case 0:
-      case 6:
-        return true;
-      default:
-        return false;
-    }
-  }
-  return index > 4;
-}
-function buildMonthVertical() {
-  const today = new Date();
-  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-  let month = [["M"], ["T"], ["W"], ["T"], ["F"], ["S"]];
-  let index = 1;
-  let offset = 1;
-  let firstDay = firstOfMonth.getDay() !== 0 ? firstOfMonth.getDay() : 7;
-  if (settings_default.startWeekOnSunday) {
-    month.unshift(["S"]);
-    index = 0;
-    offset = 0;
-    firstDay = firstDay % 7;
-  } else {
-    month.push(["S"]);
-  }
-  let dayStackCounter = 0;
-  for (; index < firstDay; index += 1) {
-    month[index - offset].push(" ");
-    dayStackCounter = (dayStackCounter + 1) % 7;
-  }
-  for (let date = 1; date <= lastOfMonth.getDate(); date += 1) {
-    month[dayStackCounter].push(`${date}`);
-    dayStackCounter = (dayStackCounter + 1) % 7;
-  }
-  const length = month.reduce((acc, dayStacks) => dayStacks.length > acc ? dayStacks.length : acc, 0);
-  month.forEach((dayStacks, index2) => {
-    while (dayStacks.length < length) {
-      month[index2].push(" ");
-    }
-  });
-  return month;
 }
 function getDateImage(date, backgroundColor, textColor, intensity) {
   const drawing = new DrawContext();
@@ -278,45 +340,4 @@ function formatEvent(stack, event, color, opacity) {
     opacity,
     font: Font.regularSystemFont(14)
   });
-}
-function addWidgetTextLine(widget, text, {
-  color = "#ffffff",
-  textSize = 12,
-  opacity = 1,
-  align,
-  font = "",
-  lineLimit = 0
-}) {
-  let textLine = widget.addText(text);
-  textLine.textColor = new Color(color);
-  textLine.lineLimit = lineLimit;
-  if (typeof font === "string") {
-    textLine.font = new Font(font, textSize);
-  } else {
-    textLine.font = font;
-  }
-  textLine.textOpacity = opacity;
-  switch (align) {
-    case "left":
-      textLine.leftAlignText();
-      break;
-    case "center":
-      textLine.centerAlignText();
-      break;
-    case "right":
-      textLine.rightAlignText();
-      break;
-    default:
-      textLine.leftAlignText();
-      break;
-  }
-}
-function getImageUrl(name) {
-  let fm = FileManager.iCloud();
-  let dir = fm.documentsDirectory();
-  return fm.joinPath(dir, `${name}`);
-}
-function setWidgetBackground(widget, imageName) {
-  const imageUrl = getImageUrl(imageName);
-  widget.backgroundImage = Image.fromFile(imageUrl);
 }
