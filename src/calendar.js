@@ -1,5 +1,7 @@
 import settings from "./settings";
 import buildMonth from "./buildMonth";
+import isWeekend from "./isWeekend";
+import { addWidgetTextLine } from "./addWidgetTextLine";
 
 main();
 
@@ -239,84 +241,6 @@ async function countEvents() {
 }
 
 /**
- * If the week starts on a Sunday indeces 0 and 6 are for weekends
- * else indices 5 and 6
- *
- * @param  {number} index
- */
-function isWeekend(index) {
-  if (settings.startWeekOnSunday) {
-    switch (index) {
-      case 0:
-      case 6:
-        return true;
-      default:
-        return false;
-    }
-  }
-  return index > 4;
-}
-
-/**
- * Creates an array of arrays, where the inner arrays include the same weekdays
- * along with a weekday identifier in the 0th position
- * [
- *   [ 'M', ' ', '7', '14', '21', '28' ],
- *   [ 'T', '1', '8', '15', '22', '29' ],
- *   [ 'W', '2', '9', '16', '23', '30' ],
- *   ...
- * ]
- *
- * @returns {Array<Array<string>>}
- */
-function buildMonthVertical() {
-  const today = new Date();
-  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-
-  let month = [["M"], ["T"], ["W"], ["T"], ["F"], ["S"]];
-  let index = 1;
-  let offset = 1;
-
-  // weekdays are 0 indexed starting with sunday
-  let firstDay = firstOfMonth.getDay() !== 0 ? firstOfMonth.getDay() : 7;
-
-  if (settings.startWeekOnSunday) {
-    month.unshift(["S"]);
-    index = 0;
-    offset = 0;
-    firstDay = firstDay % 7;
-  } else {
-    month.push(["S"]);
-  }
-
-  let dayStackCounter = 0;
-
-  // fill with empty slots
-  for (; index < firstDay; index += 1) {
-    month[index - offset].push(" ");
-    dayStackCounter = (dayStackCounter + 1) % 7;
-  }
-
-  for (let date = 1; date <= lastOfMonth.getDate(); date += 1) {
-    month[dayStackCounter].push(`${date}`);
-    dayStackCounter = (dayStackCounter + 1) % 7;
-  }
-
-  const length = month.reduce(
-    (acc, dayStacks) => (dayStacks.length > acc ? dayStacks.length : acc),
-    0
-  );
-  month.forEach((dayStacks, index) => {
-    while (dayStacks.length < length) {
-      month[index].push(" ");
-    }
-  });
-
-  return month;
-}
-
-/**
  * Creates images for dates, depending on the number of events that day
  *
  * @param  {string} date - to draw into the circle
@@ -425,52 +349,4 @@ function formatEvent(stack, event, color, opacity) {
     opacity,
     font: Font.regularSystemFont(14),
   });
-}
-
-function addWidgetTextLine(
-  widget,
-  text,
-  {
-    color = "#ffffff",
-    textSize = 12,
-    opacity = 1,
-    align,
-    font = "",
-    lineLimit = 0,
-  }
-) {
-  let textLine = widget.addText(text);
-  textLine.textColor = new Color(color);
-  textLine.lineLimit = lineLimit;
-  if (typeof font === "string") {
-    textLine.font = new Font(font, textSize);
-  } else {
-    textLine.font = font;
-  }
-  textLine.textOpacity = opacity;
-  switch (align) {
-    case "left":
-      textLine.leftAlignText();
-      break;
-    case "center":
-      textLine.centerAlignText();
-      break;
-    case "right":
-      textLine.rightAlignText();
-      break;
-    default:
-      textLine.leftAlignText();
-      break;
-  }
-}
-
-function getImageUrl(name) {
-  let fm = FileManager.iCloud();
-  let dir = fm.documentsDirectory();
-  return fm.joinPath(dir, `${name}`);
-}
-
-function setWidgetBackground(widget, imageName) {
-  const imageUrl = getImageUrl(imageName);
-  widget.backgroundImage = Image.fromFile(imageUrl);
 }
