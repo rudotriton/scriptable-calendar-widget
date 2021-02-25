@@ -1,11 +1,10 @@
+// get widget params
 const params = JSON.parse(args.widgetParameter) || { bg: "transparent.jpg" };
 
-const settings = {
-  // use true to initially give Scriptable calendar access
-  // use false to open Calendar when script is run - when tapping on the widget
-  debug: false,
-
-  // get widget params
+const settings: Settings = {
+  // set to true to initially give Scriptable calendar access
+  // set to false to open Calendar when script is run - when tapping on the widget
+  debug: true,
   // a separate image can be specified per widget in widget params:
   // Long press on widget -> Edit Widget -> Parameter
   // parameter config would look like this:
@@ -18,6 +17,9 @@ const settings = {
   eventCircleColor: "#304F9E",
   todayTextColor: "#000000",
   dateTextColor: "#ffffff",
+
+  // changes some locale specific values, such as weekday letters
+  locale: "en-US",
 
   // weekend colors
   weekendLetters: "#ffffff",
@@ -45,6 +47,34 @@ const settings = {
   showCompleteTitle: false,
   // show a circle behind each date that has an event then
   showEventCircles: true,
+  // shows the last days of the previous month if they fit
+  showPrevMonth: true,
+};
+
+export interface Settings {
+  debug: boolean,
+  imageName: string,
+  widgetBackgroundColor: string,
+  todayColor: string,
+  eventCircleColor: string,
+  todayTextColor: string,
+  dateTextColor: string,
+  locale: string,
+  weekendLetters: string,
+  weekendLetterOpacity: number,
+  weekendDates: string,
+  textColor: string,
+  opacity: number,
+  showEventsView: boolean,
+  showCalendarView: boolean,
+  showAllDayEvents: boolean,
+  showCalendarBullet: boolean,
+  startWeekOnSunday: boolean,
+  showEventsOnlyForToday: boolean,
+  nextNumOfDays: number,
+  showCompleteTitle: boolean,
+  showEventCircles: boolean,
+  showPrevMonth: boolean,
 };
 
 export default settings;

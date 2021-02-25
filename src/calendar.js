@@ -1,4 +1,4 @@
-import settings from "settings";
+import settings from "./settings";
 import buildMonth from "./buildMonth";
 
 main();
