@@ -49,6 +49,8 @@ const settings: Settings = {
   showEventCircles: true,
   // shows the last days of the previous month if they fit
   showPrevMonth: true,
+  // shows the last days of the previous month if they fit
+  showNextMonth: true,
 };
 
 export interface Settings {
@@ -75,6 +77,7 @@ export interface Settings {
   showCompleteTitle: boolean;
   showEventCircles: boolean;
   showPrevMonth: boolean;
+  showNextMonth: boolean;
 }
 
 export default settings;

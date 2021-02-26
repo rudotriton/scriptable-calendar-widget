@@ -21,7 +21,7 @@ function addWidgetTextLine(
     lineLimit?: number;
   }
 ): void {
-  let textLine = widget.addText(text);
+  const textLine = widget.addText(text);
   textLine.textColor = new Color(textColor, 1);
   textLine.lineLimit = lineLimit;
   if (typeof font === "string") {

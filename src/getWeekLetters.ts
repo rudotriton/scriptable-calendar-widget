@@ -3,14 +3,10 @@
  *
  * [[ 'M' ], [ 'T' ], [ 'W' ], [ 'T' ], [ 'F' ], [ 'S' ], [ 'S' ]]
  *
- * @param {string} locale
- * @param {boolean} startWeekOnSunday
- *
- * @returns {string[][]}
  */
 function getWeekLetters(
-  locale: string = "en-US",
-  startWeekOnSunday: boolean = false
+  locale = "en-US",
+  startWeekOnSunday = false
 ): string[][] {
   let week = [];
   for (let i = 1; i <= 7; i += 1) {
@@ -21,7 +17,7 @@ function getWeekLetters(
   // get the first letter and capitalize it as some locales have them lowercase
   week = week.map((day) => [day.slice(0, 1).toUpperCase()]);
   if (startWeekOnSunday) {
-    let sunday = week.pop();
+    const sunday = week.pop();
     week.unshift(sunday);
   }
   return week;

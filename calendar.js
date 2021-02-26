@@ -24,8 +24,30 @@ var settings = {
   showCompleteTitle: false,
   showEventCircles: true,
   showPrevMonth: true,
+  showNextMonth: true,
 };
 var settings_default = settings;
+
+// src/getMonthBoundaries.ts
+function getMonthBoundaries(date) {
+  const first = new Date(date.getFullYear(), date.getMonth(), 1);
+  const last = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  return { first, last };
+}
+var getMonthBoundaries_default = getMonthBoundaries;
+
+// src/getPreviousMonth.ts
+function getPreviousMonth(date) {
+  const newDate = new Date(date);
+  let prevMonth = date.getMonth() - 1;
+  if (prevMonth < 0) {
+    prevMonth += 12;
+    newDate.setFullYear(date.getFullYear() - 1);
+  }
+  newDate.setMonth(prevMonth);
+  return newDate;
+}
+var getPreviousMonth_default = getPreviousMonth;
 
 // src/getWeekLetters.ts
 function getWeekLetters(locale = "en-US", startWeekOnSunday = false) {
@@ -36,7 +58,7 @@ function getWeekLetters(locale = "en-US", startWeekOnSunday = false) {
   }
   week = week.map((day) => [day.slice(0, 1).toUpperCase()]);
   if (startWeekOnSunday) {
-    let sunday = week.pop();
+    const sunday = week.pop();
     week.unshift(sunday);
   }
   return week;
@@ -46,14 +68,22 @@ var getWeekLetters_default = getWeekLetters;
 // src/buildMonth.ts
 function buildMonth(
   today = new Date(),
-  { locale, showPrevMonth = true, startWeekOnSunday = false }
+  {
+    locale,
+    showPrevMonth = true,
+    showNextMonth = true,
+    startWeekOnSunday = false,
+  }
 ) {
-  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-  let month = getWeekLetters_default(locale);
+  const currentMonth = getMonthBoundaries_default(today);
+  const prevMonth = getMonthBoundaries_default(getPreviousMonth_default(today));
+  const month = getWeekLetters_default(locale, startWeekOnSunday);
+  let daysFromPrevMonth = 0;
+  let daysFromNextMonth = 0;
   let index = 1;
   let offset = 1;
-  let firstDay = firstOfMonth.getDay() !== 0 ? firstOfMonth.getDay() : 7;
+  let firstDay =
+    currentMonth.first.getDay() !== 0 ? currentMonth.first.getDay() : 7;
   if (startWeekOnSunday) {
     index = 0;
     offset = 0;
@@ -62,12 +92,16 @@ function buildMonth(
   let dayStackCounter = 0;
   for (; index < firstDay; index += 1) {
     if (showPrevMonth) {
+      month[index - offset].push(
+        `${prevMonth.last.getDate() - firstDay + 1 + index}`
+      );
+      daysFromPrevMonth += 1;
     } else {
       month[index - offset].push(" ");
     }
     dayStackCounter = (dayStackCounter + 1) % 7;
   }
-  for (let date = 1; date <= lastOfMonth.getDate(); date += 1) {
+  for (let date = 1; date <= currentMonth.last.getDate(); date += 1) {
     month[dayStackCounter].push(`${date}`);
     dayStackCounter = (dayStackCounter + 1) % 7;
   }
@@ -75,13 +109,17 @@ function buildMonth(
     (acc, dayStacks) => (dayStacks.length > acc ? dayStacks.length : acc),
     0
   );
-  console.log(length);
   month.forEach((dayStacks, index2) => {
     while (dayStacks.length < length) {
-      month[index2].push(" ");
+      if (showNextMonth) {
+        daysFromNextMonth += 1;
+        month[index2].push(`${daysFromNextMonth}`);
+      } else {
+        month[index2].push(" ");
+      }
     }
   });
-  return { month };
+  return { month, daysFromPrevMonth, daysFromNextMonth };
 }
 var buildMonth_default = buildMonth;
 
@@ -118,7 +156,7 @@ function addWidgetTextLine(
     lineLimit = 0,
   }
 ) {
-  let textLine = widget.addText(text);
+  const textLine = widget.addText(text);
   textLine.textColor = new Color(textColor, 1);
   textLine.lineLimit = lineLimit;
   if (typeof font === "string") {

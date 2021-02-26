@@ -1,8 +1,12 @@
+import getMonthBoundaries from "./getMonthBoundaries";
+import getPreviousMonth from "./getPreviousMonth";
 import getWeekLetters from "./getWeekLetters";
 import { Settings } from "./settings";
 
 interface MonthInfo {
   month: string[][];
+  daysFromPrevMonth: number;
+  daysFromNextMonth: number;
 }
 
 /**
@@ -18,17 +22,26 @@ interface MonthInfo {
  */
 function buildMonth(
   today: Date = new Date(),
-  { locale, showPrevMonth = true, startWeekOnSunday = false }: Partial<Settings>
+  {
+    locale,
+    showPrevMonth = true,
+    showNextMonth = true,
+    startWeekOnSunday = false,
+  }: Partial<Settings>
 ): MonthInfo {
-  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const currentMonth = getMonthBoundaries(today);
 
-  let month = getWeekLetters(locale);
+  const prevMonth = getMonthBoundaries(getPreviousMonth(today));
+  // this will be built up
+  const month = getWeekLetters(locale, startWeekOnSunday);
+  let daysFromPrevMonth = 0;
+  let daysFromNextMonth = 0;
   let index = 1;
   let offset = 1;
 
-  // weekdays are 0 indexed starting with sunday
-  let firstDay = firstOfMonth.getDay() !== 0 ? firstOfMonth.getDay() : 7;
+  // weekdays are 0 indexed starting with a Sunday
+  let firstDay =
+    currentMonth.first.getDay() !== 0 ? currentMonth.first.getDay() : 7;
 
   if (startWeekOnSunday) {
     index = 0;
@@ -39,16 +52,23 @@ function buildMonth(
   // increment from 0 to 6 until the month has been built
   let dayStackCounter = 0;
 
-  // fill with empty slots
+  // fill with empty slots up to the firstDay
   for (; index < firstDay; index += 1) {
     if (showPrevMonth) {
+      month[index - offset].push(
+        // e.g. prev has 31 days, ending on a Friday, firstDay is 6
+        // we fill Mon - Fri (27-31): 31 - 6 + 1 + 1
+        // if week starts on a Sunday (26-31): 31 - 6 + 1 + 0
+        `${prevMonth.last.getDate() - firstDay + 1 + index}`
+      );
+      daysFromPrevMonth += 1;
     } else {
       month[index - offset].push(" ");
     }
     dayStackCounter = (dayStackCounter + 1) % 7;
   }
 
-  for (let date = 1; date <= lastOfMonth.getDate(); date += 1) {
+  for (let date = 1; date <= currentMonth.last.getDate(); date += 1) {
     month[dayStackCounter].push(`${date}`);
     dayStackCounter = (dayStackCounter + 1) % 7;
   }
@@ -57,15 +77,19 @@ function buildMonth(
     (acc, dayStacks) => (dayStacks.length > acc ? dayStacks.length : acc),
     0
   );
-  console.log(length);
-  // fill the end of the month with empties
+  // fill the end of the month with spacers
   month.forEach((dayStacks, index) => {
     while (dayStacks.length < length) {
-      month[index].push(" ");
+      if (showNextMonth) {
+        daysFromNextMonth += 1;
+        month[index].push(`${daysFromNextMonth}`);
+      } else {
+        month[index].push(" ");
+      }
     }
   });
 
-  return { month };
+  return { month, daysFromPrevMonth, daysFromNextMonth };
 }
 
 export default buildMonth;
