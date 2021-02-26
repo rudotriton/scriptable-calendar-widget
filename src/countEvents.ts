@@ -1,48 +1,106 @@
+import getMonthBoundaries from "./getMonthBoundaries";
+
 /**
+ * Counts the number of events for each day in the visible calendar view, which
+ * may include days from the previous month and from the next month
  *
  */
-async function countEvents(): Promise<EventCountInfo> {
-  const today = new Date();
-  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const firstOfNextMonth = new Date(
-    new Date(firstOfMonth).setMonth(firstOfMonth.getMonth() + 1)
+async function countEvents(
+  date: Date,
+  extendToPrev = 0,
+  extendToNext = 0
+): Promise<EventCountInfo> {
+  const { firstOfMonth } = getMonthBoundaries(date);
+  const { startDate, endDate } = extendBoundaries(
+    firstOfMonth,
+    extendToPrev,
+    extendToNext
   );
-  let events = await CalendarEvent.between(firstOfMonth, firstOfNextMonth);
-  const eventCounts = events
-    .map((event) => {
+  const events = await CalendarEvent.between(startDate, endDate);
+  const eventCounts: EventCounts = new Map();
+  events
+    .filter((event) => event.calendar.title === "Test")
+    .forEach((event) => {
       if (event.isAllDay) {
-        const firstDay = event.startDate.getDate();
-        let lastDay = event.endDate.getDate();
-        const lastOfMonth =
-          new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate() + 1;
-        lastDay = lastDay < firstDay ? lastOfMonth : lastDay;
-        let days = [];
-        for (let i = firstDay; i < lastDay; i += 1) {
-          days.push(i);
-        }
-        return days;
+        let date = event.startDate;
+        do {
+          updateEventCounts(date, eventCounts);
+          date.setDate(date.getDate() + 1);
+        } while (date < event.endDate);
+        // const lastOfMonth =
+        // new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate() + 1;
+        // lastDay = lastDay < firstDay ? lastOfMonth : lastDay;
+        // const days = [];
+        // for (let i = firstDay; i < lastDay; i += 1) {
+        // days.push(i);
+        // }
+        // return days;
       } else {
-        return [event.startDate.getDate()];
+        // set or update a "month/date" type of key in the map
+        updateEventCounts(event.startDate, eventCounts);
       }
-    })
-    .reduce(
-      (acc, dates) => {
-        dates.forEach((date) => {
-          acc[date - 1] = acc[date - 1] + 1;
-        });
-        return acc;
-      },
-      Array.from(Array(31), () => 0)
-    );
-  const max = Math.max(...eventCounts);
-  const min = Math.min(...eventCounts);
-  let intensity = 1 / (max - min + 1);
-  intensity = intensity > 0.2 ? 0.2 : intensity;
-  return { eventCounts, intensity };
+    });
+
+  const intensity = calculateIntensity(eventCounts);
+
+  eventCounts.forEach((value, key) => console.log(`${key}: ${value}`));
+  console.log(intensity);
+  return { eventCounts: new Map(), intensity };
 }
 
+/**
+ * Find the boundaries between which the events are counted, when showing the
+ * previous and/or the next month then the boundaries are wider than just the
+ * first of the month to the last of the month.
+ */
+function extendBoundaries(
+  first: Date,
+  extendToPrev: number,
+  extendToNext: number
+): { startDate: Date; endDate: Date } {
+  const startDate = new Date(
+    first.getFullYear(),
+    first.getMonth(),
+    first.getDay() - extendToPrev
+  );
+
+  const endDate = new Date(
+    first.getFullYear(),
+    first.getMonth() + 1,
+    first.getDay() + extendToNext
+  );
+  return { startDate, endDate };
+}
+
+function updateEventCounts(date: Date, eventCounts: EventCounts) {
+  if (eventCounts.has(`${date.getMonth()}/${date.getDate()}`)) {
+    eventCounts.set(
+      `${date.getMonth()}/${date.getDate()}`,
+      eventCounts.get(`${date.getMonth()}/${date.getDate()}`) + 1
+    );
+  } else {
+    eventCounts.set(`${date.getMonth()}/${date.getDate()}`, 1);
+  }
+}
+
+function calculateIntensity(eventCounts: EventCounts): number {
+  const counter = eventCounts.values();
+  const counts = [];
+  for (let count of counter) {
+    counts.push(count);
+  }
+  const max = Math.max(...counts);
+  const min = Math.min(...counts);
+  let intensity = 1 / (max - min + 1);
+  intensity = intensity > 0.2 ? 0.2 : intensity;
+  return intensity;
+}
+
+type EventCounts = Map<string, number>;
+
 interface EventCountInfo {
-  eventCounts: Array<number>;
+  // eventCounts: number[];
+  eventCounts: EventCounts;
   intensity: number;
 }
 

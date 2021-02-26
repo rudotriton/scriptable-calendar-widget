@@ -21,7 +21,7 @@ interface MonthInfo {
  *
  */
 function buildMonth(
-  today: Date = new Date(),
+  date: Date = new Date(),
   {
     locale,
     showPrevMonth = true,
@@ -29,9 +29,9 @@ function buildMonth(
     startWeekOnSunday = false,
   }: Partial<Settings>
 ): MonthInfo {
-  const currentMonth = getMonthBoundaries(today);
+  const currentMonth = getMonthBoundaries(date);
 
-  const prevMonth = getMonthBoundaries(getPreviousMonth(today));
+  const prevMonth = getMonthBoundaries(getPreviousMonth(date));
   // this will be built up
   const month = getWeekLetters(locale, startWeekOnSunday);
   let daysFromPrevMonth = 0;
@@ -41,7 +41,9 @@ function buildMonth(
 
   // weekdays are 0 indexed starting with a Sunday
   let firstDay =
-    currentMonth.first.getDay() !== 0 ? currentMonth.first.getDay() : 7;
+    currentMonth.firstOfMonth.getDay() !== 0
+      ? currentMonth.firstOfMonth.getDay()
+      : 7;
 
   if (startWeekOnSunday) {
     index = 0;
@@ -59,7 +61,7 @@ function buildMonth(
         // e.g. prev has 31 days, ending on a Friday, firstDay is 6
         // we fill Mon - Fri (27-31): 31 - 6 + 1 + 1
         // if week starts on a Sunday (26-31): 31 - 6 + 1 + 0
-        `${prevMonth.last.getDate() - firstDay + 1 + index}`
+        `${prevMonth.lastOfMonth.getDate() - firstDay + 1 + index}`
       );
       daysFromPrevMonth += 1;
     } else {
@@ -68,7 +70,7 @@ function buildMonth(
     dayStackCounter = (dayStackCounter + 1) % 7;
   }
 
-  for (let date = 1; date <= currentMonth.last.getDate(); date += 1) {
+  for (let date = 1; date <= currentMonth.lastOfMonth.getDate(); date += 1) {
     month[dayStackCounter].push(`${date}`);
     dayStackCounter = (dayStackCounter + 1) % 7;
   }
