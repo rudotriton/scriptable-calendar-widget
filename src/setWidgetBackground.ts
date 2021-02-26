@@ -6,7 +6,7 @@ import getImageUrl from "./getImageUrl";
  * @param widget
  * @param imageName
  */
-function setWidgetBackground(widget: WidgetStack, imageName: string): void {
+function setWidgetBackground(widget: ListWidget, imageName: string): void {
   const imageUrl = getImageUrl(imageName);
   const image = Image.fromFile(imageUrl);
   widget.backgroundImage = image;

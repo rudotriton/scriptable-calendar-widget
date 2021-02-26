@@ -2,9 +2,10 @@ import settings from "./settings";
 import buildMonth from "./buildMonth";
 import isWeekend from "./isWeekend";
 import addWidgetTextLine from "./addWidgetTextLine";
+import setWidgetBackground from "./setWidgetBackground";
 import formatEvent from "./formatEvent";
-
-main();
+import countEvents from "./countEvents";
+import createDateImage from "./createDateImage";
 
 async function main() {
   if (config.runsInWidget) {
@@ -26,7 +27,7 @@ async function main() {
 
 async function createWidget() {
   let widget = new ListWidget();
-  widget.backgroundColor = new Color(settings.widgetBackgroundColor);
+  widget.backgroundColor = new Color(settings.widgetBackgroundColor, 1);
   setWidgetBackground(widget, settings.imageName);
   widget.setPadding(16, 16, 16, 16);
 
@@ -90,20 +91,15 @@ async function buildEventsView(stack) {
     // show the next 3 events at most
     const numEvents = futureEvents.length > 3 ? 3 : futureEvents.length;
     for (let i = 0; i < numEvents; i += 1) {
-      formatEvent(
-        leftStack,
-        futureEvents[i],
-        settings.textColor,
-        settings.opacity
-      );
+      formatEvent(leftStack, futureEvents[i], settings);
       // don't add a spacer after the last event
       if (i < numEvents - 1) {
         leftStack.addSpacer(8);
       }
     }
   } else {
-    addWidgetTextLine(leftStack, `No more events.`, {
-      color: settings.textColor,
+    addWidgetTextLine(`No more events.`, leftStack, {
+      textColor: settings.textColor,
       opacity: settings.opacity,
       font: Font.regularSystemFont(15),
       align: "left",
@@ -133,8 +129,8 @@ async function buildCalendarView(stack) {
   const monthLine = rightStack.addStack();
   // since dates are centered in their squares we need to add some space
   monthLine.addSpacer(4);
-  addWidgetTextLine(monthLine, dateFormatter.string(date).toUpperCase(), {
-    color: settings.textColor,
+  addWidgetTextLine(dateFormatter.string(date).toUpperCase(), monthLine, {
+    textColor: settings.textColor,
     textSize: 14,
     font: Font.boldSystemFont(13),
   });
@@ -157,7 +153,7 @@ async function buildCalendarView(stack) {
 
       // if the day is today, highlight it
       if (month[i][j] === date.getDate().toString()) {
-        const highlightedDate = getDateImage(
+        const highlightedDate = createDateImage(
           month[i][j],
           settings.todayColor,
           settings.todayTextColor,
@@ -166,7 +162,7 @@ async function buildCalendarView(stack) {
         dayStack.addImage(highlightedDate);
       } else if (j > 0 && month[i][j] !== " ") {
         // every other date
-        const dateImage = getDateImage(
+        const dateImage = createDateImage(
           month[i][j],
           settings.eventCircleColor,
           isWeekend(i) ? settings.weekendDates : settings.dateTextColor,
@@ -177,8 +173,10 @@ async function buildCalendarView(stack) {
         dayStack.addImage(dateImage);
       } else {
         // MTWTFSS line and empty dates from other months
-        addWidgetTextLine(dayStack, `${month[i][j]}`, {
-          color: isWeekend(i) ? settings.weekendLetters : settings.textColor,
+        addWidgetTextLine(`${month[i][j]}`, dayStack, {
+          textColor: isWeekend(i)
+            ? settings.weekendLetters
+            : settings.textColor,
           opacity: isWeekend(i) ? settings.weekendLetterOpacity : 1,
           font: Font.boldSystemFont(10),
           align: "center",
@@ -187,84 +185,4 @@ async function buildCalendarView(stack) {
     }
   }
 }
-
-async function countEvents() {
-  const today = new Date();
-  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const firstOfNextMonth = new Date(
-    new Date(firstOfMonth).setMonth(firstOfMonth.getMonth() + 1)
-  );
-
-  let events = await CalendarEvent.between(firstOfMonth, firstOfNextMonth);
-
-  const eventCounts = events
-    .map((event) => {
-      if (event.isAllDay) {
-        const firstDay = event.startDate.getDate();
-        let lastDay = event.endDate.getDate();
-        const lastOfMonth =
-          new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate() + 1;
-        // if the last day goes into the next month, it can be less than first
-        // in this case we count to the end of the month
-        lastDay = lastDay < firstDay ? lastOfMonth : lastDay;
-        let days = [];
-        for (let i = firstDay; i < lastDay; i += 1) {
-          days.push(i);
-        }
-        return days;
-      } else {
-        return [event.startDate.getDate()];
-      }
-    })
-    .reduce(
-      (acc, dates) => {
-        dates.forEach((date) => {
-          // 0 indexed, so date in array is at post date-1
-          acc[date - 1] = acc[date - 1] + 1;
-        });
-        return acc;
-      },
-      Array.from(Array(31), () => 0)
-    );
-
-  const max = Math.max(...eventCounts);
-  const min = Math.min(...eventCounts);
-
-  // calculate an intensity coefficient based on the events' range for the
-  // current month. If the range is from 1 to 6, the coefficient is 0.17, the
-  // event background's alpha value will be 0.17 * numEvents that day
-  let intensity = 1 / (max - min + 1);
-  // for a low range the intensity would be closer to 1, so we limit the
-  // intensity at most to 0.2
-  intensity = intensity > 0.2 ? 0.2 : intensity;
-
-  return { eventCounts, intensity };
-}
-
-/**
- * Creates images for dates, depending on the number of events that day
- *
- * @param  {string} date - to draw into the circle
- * @param  {string} color - of the background
- * @param  {number} intensity - a calculated coefficient for alpha value
- * @param  {boolean} isToday - is it today's date, for highlighting
- *
- * @returns {Image} a circle with the date
- */
-function getDateImage(date, backgroundColor, textColor, intensity) {
-  const drawing = new DrawContext();
-  drawing.respectScreenScale = true;
-  const size = 50;
-  drawing.size = new Size(size, size);
-  drawing.opaque = false;
-
-  drawing.setFillColor(new Color(backgroundColor, intensity));
-  drawing.fillEllipse(new Rect(1, 1, size - 2, size - 2));
-
-  drawing.setFont(Font.boldSystemFont(25));
-  drawing.setTextAlignedCenter();
-  drawing.setTextColor(new Color(textColor));
-  drawing.drawTextInRect(date, new Rect(0, 10, size, size));
-
-  return drawing.getImage();
-}
+main();

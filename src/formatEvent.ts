@@ -10,24 +10,27 @@ import { Settings } from "./settings";
 function formatEvent(
   stack: WidgetStack,
   event: CalendarEvent,
-  color: string,
-  opacity: number,
-  { showCalendarBullet, showCompleteTitle }: Partial<Settings>
+  {
+    opacity,
+    textColor,
+    showCalendarBullet,
+    showCompleteTitle,
+  }: Partial<Settings>
 ): void {
   const eventLine = stack.addStack();
 
   if (showCalendarBullet) {
     // show calendar bullet in front of event name
-    addWidgetTextLine(eventLine, "● ", {
-      color: event.calendar.color.hex,
+    addWidgetTextLine("● ", eventLine, {
+      textColor: event.calendar.color.hex,
       font: Font.mediumSystemFont(14),
       lineLimit: showCompleteTitle ? 0 : 1,
     });
   }
 
   // event title
-  addWidgetTextLine(eventLine, event.title, {
-    color,
+  addWidgetTextLine(event.title, eventLine, {
+    textColor,
     font: Font.mediumSystemFont(14),
     lineLimit: showCompleteTitle ? 0 : 1,
   });
@@ -47,8 +50,8 @@ function formatEvent(
   }
 
   // event time
-  addWidgetTextLine(stack, time, {
-    color,
+  addWidgetTextLine(time, stack, {
+    textColor,
     opacity,
     font: Font.regularSystemFont(14),
   });
