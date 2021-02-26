@@ -3,9 +3,11 @@
   "version": "0.0.1",
   "description": "A script for iOS Scriptable app.",
   "main": "calendar.js",
+  "type": "module",
   "scripts": {
-    "build": "esbuild src/index.js --bundle --platform=node --outfile=calendar.js",
-    "dev": "ts-node-dev --respawn test.ts"
+    "build": "esbuild src/index.ts --bundle --platform=node --outfile=calendar.js",
+    "dev": "ts-node-dev --respawn test.ts",
+    "postBuild": "node util/postBundle.js calendar.js --out-file=calendar.js"
   },
   "repository": {
     "type": "git",
@@ -22,6 +24,7 @@
     "@types/scriptable-ios": "^1.6.1",
     "@typescript-eslint/eslint-plugin": "^4.15.2",
     "@typescript-eslint/parser": "^4.15.2",
+    "commander": "^7.1.0",
     "esbuild": "^0.8.52",
     "eslint": "^7.20.0",
     "eslint_d": "^10.0.3",
