@@ -5,9 +5,10 @@
   "main": "calendar.js",
   "type": "module",
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --platform=node --outfile=calendar.js",
+    "build": "npm run bundle && npm run postBundle",
+    "bundle": "esbuild src/index.ts --bundle --platform=node --outfile=calendar.js",
     "dev": "ts-node-dev --respawn test.ts",
-    "postBuild": "node util/postBundle.js calendar.js --out-file=calendar.js"
+    "postBundle": "node util/postBundle.js calendar.js --out-file=calendar.js"
   },
   "repository": {
     "type": "git",
