@@ -1,7 +1,10 @@
 // src/settings.ts
-var params = JSON.parse(args.widgetParameter) || { bg: "transparent.jpg" };
+var params = JSON.parse(args.widgetParameter) || {
+  bg: "widget-bgs/light-1121.jpg",
+};
 var settings = {
   debug: true,
+  calendarApp: "calshow",
   imageName: params.bg,
   widgetBackgroundColor: "#000000",
   todayColor: "#FFB800",
@@ -28,19 +31,16 @@ var settings = {
 };
 var settings_default = settings;
 
-// src/getImageUrl.ts
+// src/setWidgetBackground.ts
+function setWidgetBackground(widget, imageName) {
+  const imageUrl = getImageUrl(imageName);
+  const image = Image.fromFile(imageUrl);
+  widget.backgroundImage = image;
+}
 function getImageUrl(name) {
   let fm = FileManager.iCloud();
   let dir = fm.documentsDirectory();
   return fm.joinPath(dir, `${name}`);
-}
-var getImageUrl_default = getImageUrl;
-
-// src/setWidgetBackground.ts
-function setWidgetBackground(widget, imageName) {
-  const imageUrl = getImageUrl_default(imageName);
-  const image = Image.fromFile(imageUrl);
-  widget.backgroundImage = image;
 }
 var setWidgetBackground_default = setWidgetBackground;
 
@@ -250,7 +250,7 @@ function calculateIntensity(eventCounts) {
   const max = Math.max(...counts);
   const min = Math.min(...counts);
   let intensity = 1 / (max - min + 1);
-  intensity = intensity < 0.4 ? 0.4 : intensity;
+  intensity = intensity < 0.3 ? 0.3 : intensity;
   return intensity;
 }
 var countEvents_default = countEvents;
@@ -259,7 +259,7 @@ var countEvents_default = countEvents;
 function createDateImage(date, backgroundColor, textColor, intensity) {
   const drawing = new DrawContext();
   drawing.respectScreenScale = true;
-  const size = 50;
+  const size = 75;
   drawing.size = new Size(size, size);
   drawing.opaque = false;
   drawing.setFillColor(new Color(backgroundColor, intensity));
@@ -488,7 +488,9 @@ async function main() {
   } else {
     const appleDate = new Date("2001/01/01");
     const timestamp = (new Date().getTime() - appleDate.getTime()) / 1e3;
-    const callback = new CallbackURL("calshow:" + timestamp);
+    const callback = new CallbackURL(
+      `${settings_default.calendarApp}:` + timestamp
+    );
     callback.open();
     Script.complete();
   }

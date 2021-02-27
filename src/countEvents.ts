@@ -84,7 +84,7 @@ function calculateIntensity(eventCounts: EventCounts): number {
   const max = Math.max(...counts);
   const min = Math.min(...counts);
   let intensity = 1 / (max - min + 1);
-  intensity = intensity < 0.4 ? 0.4 : intensity;
+  intensity = intensity < 0.3 ? 0.3 : intensity;
   return intensity;
 }
 
