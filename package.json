@@ -7,8 +7,10 @@
   "scripts": {
     "build": "npm run bundle && npm run postBundle",
     "bundle": "esbuild src/index.ts --bundle --platform=node --outfile=calendar.js",
-    "dev": "ts-node-dev --respawn test.ts",
-    "postBundle": "node util/postBundle.js calendar.js --out-file=calendar.js"
+    "postBundle": "node util/postBundle.js calendar.js --out-file=calendar.js",
+    "test": "ts-node-dev --respawn test.ts",
+    "bundle:watch": "esbuild src/index.ts --bundle --watch --platform=node --outfile=dev/bundle.js",
+    "dev": "concurrently \"npm run bundle:watch\" \"node util/watchBuildMove.js\""
   },
   "repository": {
     "type": "git",
@@ -25,6 +27,7 @@
     "@types/scriptable-ios": "^1.6.1",
     "@typescript-eslint/eslint-plugin": "^4.15.2",
     "@typescript-eslint/parser": "^4.15.2",
+    "chokidar": "^3.5.1",
     "commander": "^7.1.0",
     "esbuild": "^0.8.52",
     "eslint": "^7.20.0",
@@ -34,5 +37,8 @@
     "eslint-plugin-prettier": "^3.3.1",
     "prettier": "^2.2.1",
     "ts-node-dev": "^1.1.6"
+  },
+  "dependencies": {
+    "concurrently": "^6.0.0"
   }
 }
