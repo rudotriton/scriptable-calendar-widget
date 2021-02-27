@@ -80,14 +80,22 @@ function buildCalendar(
     dayStackCounter = (dayStackCounter + 1) % 7;
   }
 
-  const length = calendar.reduce(
+  // find the longest weekday array
+  let longestColumn = calendar.reduce(
     (acc, dayStacks) => (dayStacks.length > acc ? dayStacks.length : acc),
     0
   );
-  // fill the end of the month with spacers
+
+  // about once in 9-10 years, february can fit into just 4 rows, so a column is
+  // 5 tall with day indicators
+  if (showNextMonth && longestColumn < 6) {
+    longestColumn += 1;
+  }
+  // fill the end of the month with spacers, if the weekday array is shorter
+  // than the longest
   const nextMonth = getMonthOffset(date, 1);
   calendar.forEach((dayStacks, index) => {
-    while (dayStacks.length < length) {
+    while (dayStacks.length < longestColumn) {
       if (showNextMonth) {
         daysFromNextMonth += 1;
         calendar[index].push(`${nextMonth.getMonth()}/${daysFromNextMonth}`);
