@@ -3,15 +3,15 @@ var params = JSON.parse(args.widgetParameter) || { bg: "transparent.jpg" };
 var settings = {
   debug: true,
   imageName: params.bg,
-  widgetBackgroundColor: "#ff0000",
-  todayColor: "#F24747",
-  eventCircleColor: "#304F9E",
+  widgetBackgroundColor: "#000000",
+  todayColor: "#FFB800",
+  eventCircleColor: "#1E5C7B",
   todayTextColor: "#000000",
   dateTextColor: "#ffffff",
   locale: "en-US",
-  weekendLetters: "#ffffff",
-  weekendLetterOpacity: 0.7,
-  weekendDates: "#ffffff",
+  weekendLetters: "#FFB800",
+  weekendLetterOpacity: 1,
+  weekendDates: "#FFB800",
   textColor: "#ffffff",
   opacity: 0.7,
   showEventsView: params.view ? params.view === "events" : true,
@@ -27,6 +27,22 @@ var settings = {
   showNextMonth: true,
 };
 var settings_default = settings;
+
+// src/getImageUrl.ts
+function getImageUrl(name) {
+  let fm = FileManager.iCloud();
+  let dir = fm.documentsDirectory();
+  return fm.joinPath(dir, `${name}`);
+}
+var getImageUrl_default = getImageUrl;
+
+// src/setWidgetBackground.ts
+function setWidgetBackground(widget, imageName) {
+  const imageUrl = getImageUrl_default(imageName);
+  const image = Image.fromFile(imageUrl);
+  widget.backgroundImage = image;
+}
+var setWidgetBackground_default = setWidgetBackground;
 
 // src/addWidgetTextLine.ts
 function addWidgetTextLine(
@@ -66,87 +82,6 @@ function addWidgetTextLine(
   }
 }
 var addWidgetTextLine_default = addWidgetTextLine;
-
-// src/getImageUrl.ts
-function getImageUrl(name) {
-  let fm = FileManager.iCloud();
-  let dir = fm.documentsDirectory();
-  return fm.joinPath(dir, `${name}`);
-}
-var getImageUrl_default = getImageUrl;
-
-// src/setWidgetBackground.ts
-function setWidgetBackground(widget, imageName) {
-  const imageUrl = getImageUrl_default(imageName);
-  const image = Image.fromFile(imageUrl);
-  widget.backgroundImage = image;
-}
-var setWidgetBackground_default = setWidgetBackground;
-
-// src/formatTime.ts
-function formatTime(date) {
-  let dateFormatter = new DateFormatter();
-  dateFormatter.useNoDateStyle();
-  dateFormatter.useShortTimeStyle();
-  return dateFormatter.string(date);
-}
-var formatTime_default = formatTime;
-
-// src/getSuffix.ts
-function getSuffix(date) {
-  if (date > 3 && date < 21) return "th";
-  switch (date % 10) {
-    case 1:
-      return "st";
-    case 2:
-      return "nd";
-    case 3:
-      return "rd";
-    default:
-      return "th";
-  }
-}
-var getSuffix_default = getSuffix;
-
-// src/formatEvent.ts
-function formatEvent(
-  stack,
-  event,
-  { opacity, textColor, showCalendarBullet, showCompleteTitle }
-) {
-  const eventLine = stack.addStack();
-  if (showCalendarBullet) {
-    addWidgetTextLine_default("\u25CF ", eventLine, {
-      textColor: event.calendar.color.hex,
-      font: Font.mediumSystemFont(14),
-      lineLimit: showCompleteTitle ? 0 : 1,
-    });
-  }
-  addWidgetTextLine_default(event.title, eventLine, {
-    textColor,
-    font: Font.mediumSystemFont(14),
-    lineLimit: showCompleteTitle ? 0 : 1,
-  });
-  let time;
-  if (event.isAllDay) {
-    time = "All Day";
-  } else {
-    time = `${formatTime_default(event.startDate)} - ${formatTime_default(
-      event.endDate
-    )}`;
-  }
-  const today = new Date().getDate();
-  const eventDate = event.startDate.getDate();
-  if (eventDate !== today) {
-    time = `${eventDate}${getSuffix_default(eventDate)} ${time}`;
-  }
-  addWidgetTextLine_default(time, stack, {
-    textColor,
-    opacity,
-    font: Font.regularSystemFont(14),
-  });
-}
-var formatEvent_default = formatEvent;
 
 // src/getMonthBoundaries.ts
 function getMonthBoundaries(date) {
@@ -315,7 +250,7 @@ function calculateIntensity(eventCounts) {
   const max = Math.max(...counts);
   const min = Math.min(...counts);
   let intensity = 1 / (max - min + 1);
-  intensity = intensity > 0.2 ? 0.2 : intensity;
+  intensity = intensity < 0.4 ? 0.4 : intensity;
   return intensity;
 }
 var countEvents_default = countEvents;
@@ -338,12 +273,7 @@ function createDateImage(date, backgroundColor, textColor, intensity) {
 var createDateImage_default = createDateImage;
 
 // src/isWeekend.ts
-function isWeekend(
-  index,
-  { startWeekOnSunday } = {
-    startWeekOnSunday: false,
-  }
-) {
+function isWeekend(index, startWeekOnSunday = false) {
   if (startWeekOnSunday) {
     switch (index) {
       case 0:
@@ -358,7 +288,7 @@ function isWeekend(
 var isWeekend_default = isWeekend;
 
 // src/buildCalendarView.ts
-async function buildCalendarView(date, stack) {
+async function buildCalendarView(date, stack, settings2) {
   const rightStack = stack.addStack();
   rightStack.layoutVertically();
   const dateFormatter = new DateFormatter();
@@ -370,7 +300,7 @@ async function buildCalendarView(date, stack) {
     dateFormatter.string(date).toUpperCase(),
     monthLine,
     {
-      textColor: settings_default.textColor,
+      textColor: settings2.textColor,
       textSize: 14,
       font: Font.boldSystemFont(13),
     }
@@ -381,7 +311,7 @@ async function buildCalendarView(date, stack) {
     calendar,
     daysFromPrevMonth,
     daysFromNextMonth,
-  } = buildCalendar_default(date, settings_default);
+  } = buildCalendar_default(date, settings2);
   const { eventCounts, intensity } = await countEvents_default(
     date,
     daysFromPrevMonth,
@@ -398,30 +328,30 @@ async function buildCalendarView(date, stack) {
       if (calendar[i][j] === `${date.getMonth()}/${date.getDate()}`) {
         const highlightedDate = createDateImage_default(
           day,
-          settings_default.todayColor,
-          settings_default.todayTextColor,
+          settings2.todayColor,
+          settings2.todayTextColor,
           1
         );
         dayStack.addImage(highlightedDate);
       } else if (j > 0 && calendar[i][j] !== " ") {
         const dateImage = createDateImage_default(
           day,
-          settings_default.eventCircleColor,
-          isWeekend_default(i)
-            ? settings_default.weekendDates
-            : settings_default.dateTextColor,
-          settings_default.showEventCircles
+          settings2.eventCircleColor,
+          isWeekend_default(i, settings2.startWeekOnSunday)
+            ? settings2.weekendDates
+            : settings2.dateTextColor,
+          settings2.showEventCircles
             ? eventCounts.get(calendar[i][j]) * intensity
             : 0
         );
         dayStack.addImage(dateImage);
       } else {
         addWidgetTextLine_default(`${calendar[i][j]}`, dayStack, {
-          textColor: isWeekend_default(i)
-            ? settings_default.weekendLetters
-            : settings_default.textColor,
-          opacity: isWeekend_default(i)
-            ? settings_default.weekendLetterOpacity
+          textColor: isWeekend_default(i, settings2.startWeekOnSunday)
+            ? settings2.weekendLetters
+            : settings2.textColor,
+          opacity: isWeekend_default(i, settings2.startWeekOnSunday)
+            ? settings2.weekendLetterOpacity
             : 1,
           font: Font.boldSystemFont(10),
           align: "center",
@@ -431,6 +361,119 @@ async function buildCalendarView(date, stack) {
   }
 }
 var buildCalendarView_default = buildCalendarView;
+
+// src/formatTime.ts
+function formatTime(date) {
+  let dateFormatter = new DateFormatter();
+  dateFormatter.useNoDateStyle();
+  dateFormatter.useShortTimeStyle();
+  return dateFormatter.string(date);
+}
+var formatTime_default = formatTime;
+
+// src/getSuffix.ts
+function getSuffix(date) {
+  if (date > 3 && date < 21) return "th";
+  switch (date % 10) {
+    case 1:
+      return "st";
+    case 2:
+      return "nd";
+    case 3:
+      return "rd";
+    default:
+      return "th";
+  }
+}
+var getSuffix_default = getSuffix;
+
+// src/formatEvent.ts
+function formatEvent(
+  stack,
+  event,
+  { opacity, textColor, showCalendarBullet, showCompleteTitle }
+) {
+  const eventLine = stack.addStack();
+  if (showCalendarBullet) {
+    addWidgetTextLine_default("\u25CF ", eventLine, {
+      textColor: event.calendar.color.hex,
+      font: Font.mediumSystemFont(14),
+      lineLimit: showCompleteTitle ? 0 : 1,
+    });
+  }
+  addWidgetTextLine_default(event.title, eventLine, {
+    textColor,
+    font: Font.mediumSystemFont(14),
+    lineLimit: showCompleteTitle ? 0 : 1,
+  });
+  let time;
+  if (event.isAllDay) {
+    time = "All Day";
+  } else {
+    time = `${formatTime_default(event.startDate)} - ${formatTime_default(
+      event.endDate
+    )}`;
+  }
+  const today = new Date().getDate();
+  const eventDate = event.startDate.getDate();
+  if (eventDate !== today) {
+    time = `${eventDate}${getSuffix_default(eventDate)} ${time}`;
+  }
+  addWidgetTextLine_default(time, stack, {
+    textColor,
+    opacity,
+    font: Font.regularSystemFont(14),
+  });
+}
+var formatEvent_default = formatEvent;
+
+// src/buildEventsView.ts
+async function buildEventsView(date, stack, settings2) {
+  const leftStack = stack.addStack();
+  stack.addSpacer();
+  leftStack.layoutVertically();
+  leftStack.addSpacer();
+  let events = [];
+  if (settings2.showEventsOnlyForToday) {
+    events = await CalendarEvent.today([]);
+  } else {
+    let dateLimit = new Date();
+    dateLimit.setDate(dateLimit.getDate() + settings2.nextNumOfDays);
+    events = await CalendarEvent.between(date, dateLimit);
+  }
+  const futureEvents = [];
+  for (const event of events) {
+    if (
+      (settings2.showAllDayEvents &&
+        event.isAllDay &&
+        event.startDate.getTime() >
+          new Date(new Date().setDate(new Date().getDate() - 1)).getTime()) ||
+      (event.endDate.getTime() > date.getTime() &&
+        !event.title.startsWith("Canceled:") &&
+        event.calendar.title === "Test")
+    ) {
+      futureEvents.push(event);
+    }
+  }
+  if (futureEvents.length !== 0) {
+    const numEvents = futureEvents.length > 3 ? 3 : futureEvents.length;
+    for (let i = 0; i < numEvents; i += 1) {
+      formatEvent_default(leftStack, futureEvents[i], settings2);
+      if (i < numEvents - 1) {
+        leftStack.addSpacer(8);
+      }
+    }
+  } else {
+    addWidgetTextLine_default(`No more events.`, leftStack, {
+      textColor: settings2.textColor,
+      opacity: settings2.opacity,
+      font: Font.regularSystemFont(15),
+      align: "left",
+    });
+  }
+  leftStack.addSpacer();
+}
+var buildEventsView_default = buildEventsView;
 
 // src/index.ts
 async function main() {
@@ -458,58 +501,12 @@ async function createWidget() {
   const today = new Date();
   const globalStack = widget.addStack();
   if (settings_default.showEventsView) {
-    await buildEventsView(globalStack);
+    await buildEventsView_default(today, globalStack, settings_default);
   }
   if (settings_default.showCalendarView) {
-    await buildCalendarView_default(today, globalStack);
+    await buildCalendarView_default(today, globalStack, settings_default);
   }
   return widget;
-}
-async function buildEventsView(stack) {
-  const leftStack = stack.addStack();
-  stack.addSpacer();
-  leftStack.layoutVertically();
-  leftStack.addSpacer();
-  const date = new Date();
-  let events = [];
-  if (settings_default.showEventsOnlyForToday) {
-    events = await CalendarEvent.today([]);
-  } else {
-    let dateLimit = new Date();
-    dateLimit.setDate(dateLimit.getDate() + settings_default.nextNumOfDays);
-    events = await CalendarEvent.between(date, dateLimit);
-  }
-  const futureEvents = [];
-  for (const event of events) {
-    if (
-      (settings_default.showAllDayEvents &&
-        event.isAllDay &&
-        event.startDate.getTime() >
-          new Date(new Date().setDate(new Date().getDate() - 1)).getTime()) ||
-      (event.endDate.getTime() > date.getTime() &&
-        !event.title.startsWith("Canceled:") &&
-        event.calendar.title === "Test")
-    ) {
-      futureEvents.push(event);
-    }
-  }
-  if (futureEvents.length !== 0) {
-    const numEvents = futureEvents.length > 3 ? 3 : futureEvents.length;
-    for (let i = 0; i < numEvents; i += 1) {
-      formatEvent_default(leftStack, futureEvents[i], settings_default);
-      if (i < numEvents - 1) {
-        leftStack.addSpacer(8);
-      }
-    }
-  } else {
-    addWidgetTextLine_default(`No more events.`, leftStack, {
-      textColor: settings_default.textColor,
-      opacity: settings_default.opacity,
-      font: Font.regularSystemFont(15),
-      align: "left",
-    });
-  }
-  leftStack.addSpacer();
 }
 
 await main();

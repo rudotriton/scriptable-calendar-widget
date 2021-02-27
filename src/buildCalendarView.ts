@@ -3,14 +3,18 @@ import buildCalendar from "./buildCalendar";
 import countEvents from "./countEvents";
 import createDateImage from "./createDateImage";
 import isWeekend from "./isWeekend";
-import settings from "./settings";
+import { Settings } from "./settings";
 
 /**
  * Builds the calendar view
  *
  * @param  {WidgetStack} stack - onto which the calendar is built
  */
-async function buildCalendarView(date: Date, stack: WidgetStack) {
+async function buildCalendarView(
+  date: Date,
+  stack: WidgetStack,
+  settings: Settings
+) {
   const rightStack = stack.addStack();
   rightStack.layoutVertically();
 
@@ -69,7 +73,9 @@ async function buildCalendarView(date: Date, stack: WidgetStack) {
         const dateImage = createDateImage(
           day,
           settings.eventCircleColor,
-          isWeekend(i) ? settings.weekendDates : settings.dateTextColor,
+          isWeekend(i, settings.startWeekOnSunday)
+            ? settings.weekendDates
+            : settings.dateTextColor,
           settings.showEventCircles
             ? eventCounts.get(calendar[i][j]) * intensity
             : 0
@@ -78,10 +84,12 @@ async function buildCalendarView(date: Date, stack: WidgetStack) {
       } else {
         // first line and empty dates from other months
         addWidgetTextLine(`${calendar[i][j]}`, dayStack, {
-          textColor: isWeekend(i)
+          textColor: isWeekend(i, settings.startWeekOnSunday)
             ? settings.weekendLetters
             : settings.textColor,
-          opacity: isWeekend(i) ? settings.weekendLetterOpacity : 1,
+          opacity: isWeekend(i, settings.startWeekOnSunday)
+            ? settings.weekendLetterOpacity
+            : 1,
           font: Font.boldSystemFont(10),
           align: "center",
         });

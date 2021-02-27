@@ -5,12 +5,7 @@
  * @param {number} index
  * @param {{startWeekOnSunday: boolean}} settings
  */
-function isWeekend(
-  index: number,
-  { startWeekOnSunday }: { startWeekOnSunday: boolean } = {
-    startWeekOnSunday: false,
-  }
-): boolean {
+function isWeekend(index: number, startWeekOnSunday = false): boolean {
   if (startWeekOnSunday) {
     switch (index) {
       case 0:

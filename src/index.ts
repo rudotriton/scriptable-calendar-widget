@@ -40,7 +40,7 @@ async function createWidget() {
     await buildEventsView(globalStack);
   }
   if (settings.showCalendarView) {
-    await buildCalendarView(today, globalStack);
+    await buildCalendarView(today, globalStack, settings);
   }
 
   return widget;
