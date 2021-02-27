@@ -1,10 +1,10 @@
 import getMonthBoundaries from "./getMonthBoundaries";
-import getPreviousMonth from "./getPreviousMonth";
+import getMonthOffset from "./getMonthOffset";
 import getWeekLetters from "./getWeekLetters";
 import { Settings } from "./settings";
 
-interface MonthInfo {
-  month: string[][];
+interface CalendarInfo {
+  calendar: string[][];
   daysFromPrevMonth: number;
   daysFromNextMonth: number;
 }
@@ -20,7 +20,7 @@ interface MonthInfo {
  * ]
  *
  */
-function buildMonth(
+function buildCalendar(
   date: Date = new Date(),
   {
     locale,
@@ -28,12 +28,11 @@ function buildMonth(
     showNextMonth = true,
     startWeekOnSunday = false,
   }: Partial<Settings>
-): MonthInfo {
+): CalendarInfo {
   const currentMonth = getMonthBoundaries(date);
 
-  const prevMonth = getMonthBoundaries(getPreviousMonth(date));
-  // this will be built up
-  const month = getWeekLetters(locale, startWeekOnSunday);
+  const prevMonth = getMonthBoundaries(getMonthOffset(date, -1));
+  const calendar = getWeekLetters(locale, startWeekOnSunday);
   let daysFromPrevMonth = 0;
   let daysFromNextMonth = 0;
   let index = 1;
@@ -57,41 +56,48 @@ function buildMonth(
   // fill with empty slots up to the firstDay
   for (; index < firstDay; index += 1) {
     if (showPrevMonth) {
-      month[index - offset].push(
-        // e.g. prev has 31 days, ending on a Friday, firstDay is 6
-        // we fill Mon - Fri (27-31): 31 - 6 + 1 + 1
-        // if week starts on a Sunday (26-31): 31 - 6 + 1 + 0
-        `${prevMonth.lastOfMonth.getDate() - firstDay + 1 + index}`
+      calendar[index - offset].push(
+        `${prevMonth.lastOfMonth.getMonth()}/${
+          prevMonth.lastOfMonth.getDate() - firstDay + 1 + index
+          // e.g. prev has 31 days, ending on a Friday, firstDay is 6
+          // we fill Mon - Fri (27-31): 31 - 6 + 1 + 1
+          // if week starts on a Sunday (26-31): 31 - 6 + 1 + 0
+        }`
       );
       daysFromPrevMonth += 1;
     } else {
-      month[index - offset].push(" ");
+      calendar[index - offset].push(" ");
     }
     dayStackCounter = (dayStackCounter + 1) % 7;
   }
 
-  for (let date = 1; date <= currentMonth.lastOfMonth.getDate(); date += 1) {
-    month[dayStackCounter].push(`${date}`);
+  for (
+    let indexDate = 1;
+    indexDate <= currentMonth.lastOfMonth.getDate();
+    indexDate += 1
+  ) {
+    calendar[dayStackCounter].push(`${date.getMonth()}/${indexDate}`);
     dayStackCounter = (dayStackCounter + 1) % 7;
   }
 
-  const length = month.reduce(
+  const length = calendar.reduce(
     (acc, dayStacks) => (dayStacks.length > acc ? dayStacks.length : acc),
     0
   );
   // fill the end of the month with spacers
-  month.forEach((dayStacks, index) => {
+  const nextMonth = getMonthOffset(date, 1);
+  calendar.forEach((dayStacks, index) => {
     while (dayStacks.length < length) {
       if (showNextMonth) {
         daysFromNextMonth += 1;
-        month[index].push(`${daysFromNextMonth}`);
+        calendar[index].push(`${nextMonth.getMonth()}/${daysFromNextMonth}`);
       } else {
-        month[index].push(" ");
+        calendar[index].push(" ");
       }
     }
   });
 
-  return { month, daysFromPrevMonth, daysFromNextMonth };
+  return { calendar, daysFromPrevMonth, daysFromNextMonth };
 }
 
-export default buildMonth;
+export default buildCalendar;

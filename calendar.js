@@ -3,7 +3,7 @@ var params = JSON.parse(args.widgetParameter) || { bg: "transparent.jpg" };
 var settings = {
   debug: true,
   imageName: params.bg,
-  widgetBackgroundColor: "#000000",
+  widgetBackgroundColor: "#ff0000",
   todayColor: "#F24747",
   eventCircleColor: "#304F9E",
   todayTextColor: "#000000",
@@ -156,18 +156,21 @@ function getMonthBoundaries(date) {
 }
 var getMonthBoundaries_default = getMonthBoundaries;
 
-// src/getPreviousMonth.ts
-function getPreviousMonth(date) {
+// src/getMonthOffset.ts
+function getMonthOffset(date, offset) {
   const newDate = new Date(date);
-  let prevMonth = date.getMonth() - 1;
-  if (prevMonth < 0) {
-    prevMonth += 12;
+  let offsetMonth = date.getMonth() + offset;
+  if (offsetMonth < 0) {
+    offsetMonth += 12;
     newDate.setFullYear(date.getFullYear() - 1);
+  } else if (offsetMonth > 11) {
+    offsetMonth -= 12;
+    newDate.setFullYear(date.getFullYear() + 1);
   }
-  newDate.setMonth(prevMonth);
+  newDate.setMonth(offsetMonth);
   return newDate;
 }
-var getPreviousMonth_default = getPreviousMonth;
+var getMonthOffset_default = getMonthOffset;
 
 // src/getWeekLetters.ts
 function getWeekLetters(locale = "en-US", startWeekOnSunday = false) {
@@ -185,8 +188,8 @@ function getWeekLetters(locale = "en-US", startWeekOnSunday = false) {
 }
 var getWeekLetters_default = getWeekLetters;
 
-// src/buildMonth.ts
-function buildMonth(
+// src/buildCalendar.ts
+function buildCalendar(
   date = new Date(),
   {
     locale,
@@ -196,8 +199,10 @@ function buildMonth(
   }
 ) {
   const currentMonth = getMonthBoundaries_default(date);
-  const prevMonth = getMonthBoundaries_default(getPreviousMonth_default(date));
-  const month = getWeekLetters_default(locale, startWeekOnSunday);
+  const prevMonth = getMonthBoundaries_default(
+    getMonthOffset_default(date, -1)
+  );
+  const calendar = getWeekLetters_default(locale, startWeekOnSunday);
   let daysFromPrevMonth = 0;
   let daysFromNextMonth = 0;
   let index = 1;
@@ -214,36 +219,43 @@ function buildMonth(
   let dayStackCounter = 0;
   for (; index < firstDay; index += 1) {
     if (showPrevMonth) {
-      month[index - offset].push(
-        `${prevMonth.lastOfMonth.getDate() - firstDay + 1 + index}`
+      calendar[index - offset].push(
+        `${prevMonth.lastOfMonth.getMonth()}/${
+          prevMonth.lastOfMonth.getDate() - firstDay + 1 + index
+        }`
       );
       daysFromPrevMonth += 1;
     } else {
-      month[index - offset].push(" ");
+      calendar[index - offset].push(" ");
     }
     dayStackCounter = (dayStackCounter + 1) % 7;
   }
-  for (let date2 = 1; date2 <= currentMonth.lastOfMonth.getDate(); date2 += 1) {
-    month[dayStackCounter].push(`${date2}`);
+  for (
+    let indexDate = 1;
+    indexDate <= currentMonth.lastOfMonth.getDate();
+    indexDate += 1
+  ) {
+    calendar[dayStackCounter].push(`${date.getMonth()}/${indexDate}`);
     dayStackCounter = (dayStackCounter + 1) % 7;
   }
-  const length = month.reduce(
+  const length = calendar.reduce(
     (acc, dayStacks) => (dayStacks.length > acc ? dayStacks.length : acc),
     0
   );
-  month.forEach((dayStacks, index2) => {
+  const nextMonth = getMonthOffset_default(date, 1);
+  calendar.forEach((dayStacks, index2) => {
     while (dayStacks.length < length) {
       if (showNextMonth) {
         daysFromNextMonth += 1;
-        month[index2].push(`${daysFromNextMonth}`);
+        calendar[index2].push(`${nextMonth.getMonth()}/${daysFromNextMonth}`);
       } else {
-        month[index2].push(" ");
+        calendar[index2].push(" ");
       }
     }
   });
-  return { month, daysFromPrevMonth, daysFromNextMonth };
+  return { calendar, daysFromPrevMonth, daysFromNextMonth };
 }
-var buildMonth_default = buildMonth;
+var buildCalendar_default = buildCalendar;
 
 // src/countEvents.ts
 async function countEvents(date, extendToPrev = 0, extendToNext = 0) {
@@ -259,7 +271,7 @@ async function countEvents(date, extendToPrev = 0, extendToNext = 0) {
     .filter((event) => event.calendar.title === "Test")
     .forEach((event) => {
       if (event.isAllDay) {
-        let date2 = event.startDate;
+        const date2 = event.startDate;
         do {
           updateEventCounts(date2, eventCounts);
           date2.setDate(date2.getDate() + 1);
@@ -269,9 +281,7 @@ async function countEvents(date, extendToPrev = 0, extendToNext = 0) {
       }
     });
   const intensity = calculateIntensity(eventCounts);
-  eventCounts.forEach((value, key) => console.log(`${key}: ${value}`));
-  console.log(intensity);
-  return { eventCounts: new Map(), intensity };
+  return { eventCounts, intensity };
 }
 function extendBoundaries(first, extendToPrev, extendToNext) {
   const startDate = new Date(
@@ -367,44 +377,46 @@ async function buildCalendarView(date, stack) {
   );
   const calendarStack = rightStack.addStack();
   calendarStack.spacing = 2;
-  const { month, daysFromPrevMonth, daysFromNextMonth } = buildMonth_default(
-    date,
-    settings_default
-  );
+  const {
+    calendar,
+    daysFromPrevMonth,
+    daysFromNextMonth,
+  } = buildCalendar_default(date, settings_default);
   const { eventCounts, intensity } = await countEvents_default(
     date,
     daysFromPrevMonth,
     daysFromNextMonth
   );
-  for (let i = 0; i < month.length; i += 1) {
+  for (let i = 0; i < calendar.length; i += 1) {
     let weekdayStack = calendarStack.addStack();
     weekdayStack.layoutVertically();
-    for (let j = 0; j < month[i].length; j += 1) {
+    for (let j = 0; j < calendar[i].length; j += 1) {
       let dayStack = weekdayStack.addStack();
       dayStack.size = new Size(spacing, spacing);
       dayStack.centerAlignContent();
-      if (month[i][j] === date.getDate().toString()) {
+      const [, day] = calendar[i][j].split("/");
+      if (calendar[i][j] === `${date.getMonth()}/${date.getDate()}`) {
         const highlightedDate = createDateImage_default(
-          month[i][j],
+          day,
           settings_default.todayColor,
           settings_default.todayTextColor,
           1
         );
         dayStack.addImage(highlightedDate);
-      } else if (j > 0 && month[i][j] !== " ") {
+      } else if (j > 0 && calendar[i][j] !== " ") {
         const dateImage = createDateImage_default(
-          month[i][j],
+          day,
           settings_default.eventCircleColor,
           isWeekend_default(i)
             ? settings_default.weekendDates
             : settings_default.dateTextColor,
           settings_default.showEventCircles
-            ? eventCounts[parseInt(month[i][j]) - 1] * intensity
+            ? eventCounts.get(calendar[i][j]) * intensity
             : 0
         );
         dayStack.addImage(dateImage);
       } else {
-        addWidgetTextLine_default(`${month[i][j]}`, dayStack, {
+        addWidgetTextLine_default(`${calendar[i][j]}`, dayStack, {
           textColor: isWeekend_default(i)
             ? settings_default.weekendLetters
             : settings_default.textColor,

@@ -1,5 +1,5 @@
 import settings from "./settings";
-import buildMonth from "./buildMonth";
+import buildMonth from "./buildCalendar";
 import isWeekend from "./isWeekend";
 import addWidgetTextLine from "./addWidgetTextLine";
 import setWidgetBackground from "./setWidgetBackground";

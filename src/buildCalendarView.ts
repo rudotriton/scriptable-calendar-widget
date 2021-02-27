@@ -1,5 +1,5 @@
 import addWidgetTextLine from "./addWidgetTextLine";
-import buildMonth from "./buildMonth";
+import buildCalendar from "./buildCalendar";
 import countEvents from "./countEvents";
 import createDateImage from "./createDateImage";
 import isWeekend from "./isWeekend";
@@ -33,7 +33,7 @@ async function buildCalendarView(date: Date, stack: WidgetStack) {
   const calendarStack = rightStack.addStack();
   calendarStack.spacing = 2;
 
-  const { month, daysFromPrevMonth, daysFromNextMonth } = buildMonth(
+  const { calendar, daysFromPrevMonth, daysFromNextMonth } = buildCalendar(
     date,
     settings
   );
@@ -44,39 +44,40 @@ async function buildCalendarView(date: Date, stack: WidgetStack) {
     daysFromNextMonth
   );
 
-  for (let i = 0; i < month.length; i += 1) {
+  for (let i = 0; i < calendar.length; i += 1) {
     let weekdayStack = calendarStack.addStack();
     weekdayStack.layoutVertically();
 
-    for (let j = 0; j < month[i].length; j += 1) {
+    for (let j = 0; j < calendar[i].length; j += 1) {
       let dayStack = weekdayStack.addStack();
       dayStack.size = new Size(spacing, spacing);
       dayStack.centerAlignContent();
 
+      const [, day] = calendar[i][j].split("/");
       // if the day is today, highlight it
-      if (month[i][j] === date.getDate().toString()) {
+      if (calendar[i][j] === `${date.getMonth()}/${date.getDate()}`) {
         const highlightedDate = createDateImage(
-          month[i][j],
+          day,
           settings.todayColor,
           settings.todayTextColor,
           1
         );
         dayStack.addImage(highlightedDate);
-      } else if (j > 0 && month[i][j] !== " ") {
+        // j == 0, contains the letters
+      } else if (j > 0 && calendar[i][j] !== " ") {
         // every other date
         const dateImage = createDateImage(
-          month[i][j],
+          day,
           settings.eventCircleColor,
           isWeekend(i) ? settings.weekendDates : settings.dateTextColor,
           settings.showEventCircles
-            ? // TODO position to index function here
-              eventCounts[parseInt(month[i][j]) - 1] * intensity
+            ? eventCounts.get(calendar[i][j]) * intensity
             : 0
         );
         dayStack.addImage(dateImage);
       } else {
-        // MTWTFSS line and empty dates from other months
-        addWidgetTextLine(`${month[i][j]}`, dayStack, {
+        // first line and empty dates from other months
+        addWidgetTextLine(`${calendar[i][j]}`, dayStack, {
           textColor: isWeekend(i)
             ? settings.weekendLetters
             : settings.textColor,

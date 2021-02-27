@@ -22,30 +22,19 @@ async function countEvents(
     .filter((event) => event.calendar.title === "Test")
     .forEach((event) => {
       if (event.isAllDay) {
-        let date = event.startDate;
+        const date = event.startDate;
         do {
           updateEventCounts(date, eventCounts);
           date.setDate(date.getDate() + 1);
         } while (date < event.endDate);
-        // const lastOfMonth =
-        // new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate() + 1;
-        // lastDay = lastDay < firstDay ? lastOfMonth : lastDay;
-        // const days = [];
-        // for (let i = firstDay; i < lastDay; i += 1) {
-        // days.push(i);
-        // }
-        // return days;
       } else {
-        // set or update a "month/date" type of key in the map
         updateEventCounts(event.startDate, eventCounts);
       }
     });
 
   const intensity = calculateIntensity(eventCounts);
 
-  eventCounts.forEach((value, key) => console.log(`${key}: ${value}`));
-  console.log(intensity);
-  return { eventCounts: new Map(), intensity };
+  return { eventCounts, intensity };
 }
 
 /**
@@ -72,6 +61,9 @@ function extendBoundaries(
   return { startDate, endDate };
 }
 
+/**
+ * set or update a "month/date" type of key in the map
+ */
 function updateEventCounts(date: Date, eventCounts: EventCounts) {
   if (eventCounts.has(`${date.getMonth()}/${date.getDate()}`)) {
     eventCounts.set(
