@@ -5,6 +5,8 @@ const settings: Settings = {
   // set to true to initially give Scriptable calendar access
   // set to false to open Calendar when script is run - when tapping on the widget
   debug: true,
+  // calshow is the ios calendar app
+  calendarApp: "calshow",
   // a separate image can be specified per widget in widget params:
   // Long press on widget -> Edit Widget -> Parameter
   // parameter config would look like this:
@@ -55,6 +57,7 @@ const settings: Settings = {
 
 export interface Settings {
   debug: boolean;
+  calendarApp: string;
   imageName: string;
   widgetBackgroundColor: string;
   todayColor: string;

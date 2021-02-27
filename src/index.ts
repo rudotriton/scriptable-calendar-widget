@@ -15,7 +15,7 @@ async function main() {
   } else {
     const appleDate = new Date("2001/01/01");
     const timestamp = (new Date().getTime() - appleDate.getTime()) / 1000;
-    const callback = new CallbackURL("calshow:" + timestamp);
+    const callback = new CallbackURL(`${settings.calendarApp}:` + timestamp);
     callback.open();
     Script.complete();
   }
