@@ -23,7 +23,7 @@ var settings = {
   showCalendarView: params.view ? params.view === "cal" : true,
   showAllDayEvents: true,
   showCalendarBullet: true,
-  startWeekOnSunday: false,
+  startWeekOnSunday: true,
   showEventsOnlyForToday: false,
   nextNumOfDays: 7,
   showCompleteTitle: false,
@@ -174,13 +174,16 @@ function buildCalendar(
     calendar[dayStackCounter].push(`${date.getMonth()}/${indexDate}`);
     dayStackCounter = (dayStackCounter + 1) % 7;
   }
-  const length = calendar.reduce(
+  let longestColumn = calendar.reduce(
     (acc, dayStacks) => (dayStacks.length > acc ? dayStacks.length : acc),
     0
   );
+  if (showNextMonth && longestColumn < 6) {
+    longestColumn += 1;
+  }
   const nextMonth = getMonthOffset_default(date, 1);
   calendar.forEach((dayStacks, index2) => {
-    while (dayStacks.length < length) {
+    while (dayStacks.length < longestColumn) {
       if (showNextMonth) {
         daysFromNextMonth += 1;
         calendar[index2].push(`${nextMonth.getMonth()}/${daysFromNextMonth}`);
