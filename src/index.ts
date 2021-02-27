@@ -24,7 +24,7 @@ async function main() {
 async function createWidget() {
   let widget = new ListWidget();
   widget.backgroundColor = new Color(settings.widgetBackgroundColor, 1);
-  setWidgetBackground(widget, settings.imageName);
+  setWidgetBackground(widget, settings.backgroundImage);
   widget.setPadding(16, 16, 16, 16);
 
   const today = new Date();

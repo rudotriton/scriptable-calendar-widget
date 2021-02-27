@@ -11,27 +11,31 @@ const settings: Settings = {
   // Long press on widget -> Edit Widget -> Parameter
   // parameter config would look like this:
   // { "bg": "2111.jpg", "view": "events" }
-  imageName: params.bg,
+  backgroundImage: params.bg,
   widgetBackgroundColor: "#000000",
-  // background color for today
-  todayColor: "#F24747",
-  // background for all other days, only applicable if showEventCircles is true
-  eventCircleColor: "#304F9E",
   todayTextColor: "#000000",
-  dateTextColor: "#ffffff",
+  markToday: true,
+  // background color for today
+  todayCircleColor: "#FFB800",
+  // background for all other days, only applicable if showEventCircles is true
+  // show a circle behind each date that has an event then
+  showEventCircles: true,
+  eventCircleColor: "#1E5C7B",
+  // color of all the other dates
+  weekdayTextColor: "#ffffff",
+
+  // weekend colors
+  weekendLetters: "#FFB800",
+  weekendLetterOpacity: 1,
+  weekendDates: "#FFB800",
 
   // changes some locale specific values, such as weekday letters
   locale: "en-US",
 
-  // weekend colors
-  weekendLetters: "#ffffff",
-  weekendLetterOpacity: 0.7,
-  weekendDates: "#ffffff",
-
   // color for events
   textColor: "#ffffff",
-  // opacity value for weekends and event times
-  opacity: 0.7,
+  // opacity value for event times
+  eventDateTimeOpacity: 0.7,
   // choose either a split view or show only one of them
   showEventsView: params.view ? params.view === "events" : true,
   showCalendarView: params.view ? params.view === "cal" : true,
@@ -47,8 +51,6 @@ const settings: Settings = {
   nextNumOfDays: 7,
   // show full title or truncate to a single line
   showCompleteTitle: false,
-  // show a circle behind each date that has an event then
-  showEventCircles: true,
   // shows the last days of the previous month if they fit
   showPrevMonth: true,
   // shows the last days of the previous month if they fit
@@ -58,18 +60,20 @@ const settings: Settings = {
 export interface Settings {
   debug: boolean;
   calendarApp: string;
-  imageName: string;
+  backgroundImage: string;
   widgetBackgroundColor: string;
-  todayColor: string;
-  eventCircleColor: string;
   todayTextColor: string;
-  dateTextColor: string;
+  markToday: boolean;
+  todayCircleColor: string;
+  weekdayTextColor: string;
+  showEventCircles: boolean;
+  eventCircleColor: string;
   locale: string;
   weekendLetters: string;
   weekendLetterOpacity: number;
   weekendDates: string;
   textColor: string;
-  opacity: number;
+  eventDateTimeOpacity: number;
   showEventsView: boolean;
   showCalendarView: boolean;
   showAllDayEvents: boolean;
@@ -78,7 +82,6 @@ export interface Settings {
   showEventsOnlyForToday: boolean;
   nextNumOfDays: number;
   showCompleteTitle: boolean;
-  showEventCircles: boolean;
   showPrevMonth: boolean;
   showNextMonth: boolean;
 }

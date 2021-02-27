@@ -61,9 +61,8 @@ async function buildEventsView(
   } else {
     addWidgetTextLine(`No more events.`, leftStack, {
       textColor: settings.textColor,
-      opacity: settings.opacity,
+      opacity: settings.eventDateTimeOpacity,
       font: Font.regularSystemFont(15),
-      align: "left",
     });
   }
   // for centering

@@ -57,16 +57,26 @@ async function buildCalendarView(
       dayStack.size = new Size(spacing, spacing);
       dayStack.centerAlignContent();
 
-      const [, day] = calendar[i][j].split("/");
+      // splitting "month/day" or "D"
+      // a day marker won't split so if we reverse and take first we get correct
+      const day = calendar[i][j].split("/").reverse()[0];
       // if the day is today, highlight it
       if (calendar[i][j] === `${date.getMonth()}/${date.getDate()}`) {
-        const highlightedDate = createDateImage(
-          day,
-          settings.todayColor,
-          settings.todayTextColor,
-          1
-        );
-        dayStack.addImage(highlightedDate);
+        if (settings.markToday) {
+          const highlightedDate = createDateImage(
+            day,
+            settings.todayCircleColor,
+            settings.todayTextColor,
+            1
+          );
+          dayStack.addImage(highlightedDate);
+        } else {
+          addWidgetTextLine(day, dayStack, {
+            textColor: settings.todayTextColor,
+            font: Font.boldSystemFont(10),
+            align: "center",
+          });
+        }
         // j == 0, contains the letters
       } else if (j > 0 && calendar[i][j] !== " ") {
         // every other date
@@ -75,7 +85,7 @@ async function buildCalendarView(
           settings.eventCircleColor,
           isWeekend(i, settings.startWeekOnSunday)
             ? settings.weekendDates
-            : settings.dateTextColor,
+            : settings.weekdayTextColor,
           settings.showEventCircles
             ? eventCounts.get(calendar[i][j]) * intensity
             : 0
@@ -83,7 +93,7 @@ async function buildCalendarView(
         dayStack.addImage(dateImage);
       } else {
         // first line and empty dates from other months
-        addWidgetTextLine(`${calendar[i][j]}`, dayStack, {
+        addWidgetTextLine(day, dayStack, {
           textColor: isWeekend(i, settings.startWeekOnSunday)
             ? settings.weekendLetters
             : settings.textColor,

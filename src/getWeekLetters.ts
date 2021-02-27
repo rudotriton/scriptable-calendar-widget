@@ -1,5 +1,5 @@
 /**
- * Creates an array of array of weekday letters e.g.
+ * Creates an array of arrays of weekday letters e.g.
  *
  * [[ 'M' ], [ 'T' ], [ 'W' ], [ 'T' ], [ 'F' ], [ 'S' ], [ 'S' ]]
  *

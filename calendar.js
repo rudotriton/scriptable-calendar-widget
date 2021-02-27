@@ -5,27 +5,28 @@ var params = JSON.parse(args.widgetParameter) || {
 var settings = {
   debug: true,
   calendarApp: "calshow",
-  imageName: params.bg,
+  backgroundImage: params.bg,
   widgetBackgroundColor: "#000000",
-  todayColor: "#FFB800",
-  eventCircleColor: "#1E5C7B",
   todayTextColor: "#000000",
-  dateTextColor: "#ffffff",
-  locale: "en-US",
+  markToday: true,
+  todayCircleColor: "#FFB800",
+  showEventCircles: true,
+  eventCircleColor: "#1E5C7B",
+  weekdayTextColor: "#ffffff",
   weekendLetters: "#FFB800",
   weekendLetterOpacity: 1,
   weekendDates: "#FFB800",
+  locale: "en-US",
   textColor: "#ffffff",
-  opacity: 0.7,
+  eventDateTimeOpacity: 0.7,
   showEventsView: params.view ? params.view === "events" : true,
   showCalendarView: params.view ? params.view === "cal" : true,
   showAllDayEvents: true,
   showCalendarBullet: true,
-  startWeekOnSunday: true,
+  startWeekOnSunday: false,
   showEventsOnlyForToday: false,
   nextNumOfDays: 7,
   showCompleteTitle: false,
-  showEventCircles: true,
   showPrevMonth: true,
   showNextMonth: true,
 };
@@ -256,10 +257,15 @@ function calculateIntensity(eventCounts) {
 var countEvents_default = countEvents;
 
 // src/createDateImage.ts
-function createDateImage(date, backgroundColor, textColor, intensity) {
+function createDateImage(
+  date,
+  backgroundColor,
+  textColor,
+  intensity,
+  size = 50
+) {
   const drawing = new DrawContext();
   drawing.respectScreenScale = true;
-  const size = 75;
   drawing.size = new Size(size, size);
   drawing.opaque = false;
   drawing.setFillColor(new Color(backgroundColor, intensity));
@@ -324,29 +330,37 @@ async function buildCalendarView(date, stack, settings2) {
       let dayStack = weekdayStack.addStack();
       dayStack.size = new Size(spacing, spacing);
       dayStack.centerAlignContent();
-      const [, day] = calendar[i][j].split("/");
+      const day = calendar[i][j].split("/").reverse()[0];
       if (calendar[i][j] === `${date.getMonth()}/${date.getDate()}`) {
-        const highlightedDate = createDateImage_default(
-          day,
-          settings2.todayColor,
-          settings2.todayTextColor,
-          1
-        );
-        dayStack.addImage(highlightedDate);
+        if (settings2.markToday) {
+          const highlightedDate = createDateImage_default(
+            day,
+            settings2.todayCircleColor,
+            settings2.todayTextColor,
+            1
+          );
+          dayStack.addImage(highlightedDate);
+        } else {
+          addWidgetTextLine_default(day, dayStack, {
+            textColor: settings2.todayTextColor,
+            font: Font.boldSystemFont(10),
+            align: "center",
+          });
+        }
       } else if (j > 0 && calendar[i][j] !== " ") {
         const dateImage = createDateImage_default(
           day,
           settings2.eventCircleColor,
           isWeekend_default(i, settings2.startWeekOnSunday)
             ? settings2.weekendDates
-            : settings2.dateTextColor,
+            : settings2.weekdayTextColor,
           settings2.showEventCircles
             ? eventCounts.get(calendar[i][j]) * intensity
             : 0
         );
         dayStack.addImage(dateImage);
       } else {
-        addWidgetTextLine_default(`${calendar[i][j]}`, dayStack, {
+        addWidgetTextLine_default(day, dayStack, {
           textColor: isWeekend_default(i, settings2.startWeekOnSunday)
             ? settings2.weekendLetters
             : settings2.textColor,
@@ -466,9 +480,8 @@ async function buildEventsView(date, stack, settings2) {
   } else {
     addWidgetTextLine_default(`No more events.`, leftStack, {
       textColor: settings2.textColor,
-      opacity: settings2.opacity,
+      opacity: settings2.eventDateTimeOpacity,
       font: Font.regularSystemFont(15),
-      align: "left",
     });
   }
   leftStack.addSpacer();
@@ -498,7 +511,7 @@ async function main() {
 async function createWidget() {
   let widget = new ListWidget();
   widget.backgroundColor = new Color(settings_default.widgetBackgroundColor, 1);
-  setWidgetBackground_default(widget, settings_default.imageName);
+  setWidgetBackground_default(widget, settings_default.backgroundImage);
   widget.setPadding(16, 16, 16, 16);
   const today = new Date();
   const globalStack = widget.addStack();

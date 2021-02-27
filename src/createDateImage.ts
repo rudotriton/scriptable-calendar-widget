@@ -1,12 +1,13 @@
+// Todo render smaller images for bounding months
 function createDateImage(
   date: string,
   backgroundColor: string,
   textColor: string,
-  intensity: number
+  intensity: number,
+  size = 50
 ) {
   const drawing = new DrawContext();
   drawing.respectScreenScale = true;
-  const size = 50;
   drawing.size = new Size(size, size);
   drawing.opaque = false;
   drawing.setFillColor(new Color(backgroundColor, intensity));
