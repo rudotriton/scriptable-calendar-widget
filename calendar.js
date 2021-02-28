@@ -1,480 +1,63 @@
-// use true to initially give Scriptable calendar access
-// use false to open Calendar when script is run - when tapping on the widget
-const debug = false;
+// src/settings.ts
+var params = JSON.parse(args.widgetParameter) || { bg: "transparent.jpg" };
+var settings = {
+  debug: false,
+  calendarApp: "calshow",
+  backgroundImage: params.bg,
+  widgetBackgroundColor: "#000000",
+  todayTextColor: "#000000",
+  markToday: true,
+  todayCircleColor: "#FFB800",
+  showEventCircles: true,
+  eventCircleColor: "#1E5C7B",
+  weekdayTextColor: "#ffffff",
+  weekendLetters: "#FFB800",
+  weekendLetterOpacity: 1,
+  weekendDates: "#FFB800",
+  locale: "en-US",
+  textColor: "#ffffff",
+  eventDateTimeOpacity: 0.7,
+  showEventsView: params.view ? params.view === "events" : true,
+  showCalendarView: params.view ? params.view === "cal" : true,
+  showAllDayEvents: true,
+  showCalendarBullet: true,
+  startWeekOnSunday: false,
+  showEventsOnlyForToday: false,
+  nextNumOfDays: 7,
+  showCompleteTitle: false,
+  showPrevMonth: true,
+  showNextMonth: true,
+};
+var settings_default = settings;
 
-// get widget params
-const params = JSON.parse(args.widgetParameter) || { bg: "transparent.jpg" };
-// a separate image can be specified per widget in widget params:
-// Long press on widget -> Edit Widget -> Parameter
-// parameter config would look like this:
-// { "bg": "2111.jpg", "view": "events" }
-const imageName = params.bg;
-const widgetBackgroundColor = "#000000";
-// background color for today
-const todayColor = "#F24747";
-// background for all other days, only applicable if showEventCircles is true
-const eventCircleColor = "#304F9E";
-const todayTextColor = "#000000";
-const dateTextColor = "#ffffff";
-
-// weekend colors
-const weekendLetters = "#ffffff";
-const weekendLetterOpacity = 0.7;
-const weekendDates = "#ffffff";
-
-// color for events
-const textColor = "#ffffff";
-// opacity value for weekends and event times
-const opacity = 0.7;
-// choose either a split view or show only one of them
-const showEventsView = params.view ? params.view === "events" : true;
-const showCalendarView = params.view ? params.view === "cal" : true;
-// show or hide all day events
-const showAllDayEvents = true;
-// show calendar colored bullet for each event
-const showCalendarBullet = true;
-// week starts on a Sunday
-const startWeekOnSunday = false;
-// show events for the whole week or limit just to the day
-const showEventsOnlyForToday = false;
-// shows events for that many days if showEventsOnlyForToday is false
-const nextNumOfDays = 7;
-// show full title or truncate to a single line
-const showCompleteTitle = false;
-// show a circle behind each date that has an event then
-const showEventCircles = true;
-
-if (config.runsInWidget) {
-  let widget = await createWidget();
-  Script.setWidget(widget);
-  Script.complete();
-} else if (debug) {
-  Script.complete();
-  let widget = await createWidget();
-  await widget.presentMedium();
-} else {
-  const appleDate = new Date("2001/01/01");
-  const timestamp = (new Date().getTime() - appleDate.getTime()) / 1000;
-  const callback = new CallbackURL("calshow:" + timestamp);
-  callback.open();
-  Script.complete();
+// src/setWidgetBackground.ts
+function setWidgetBackground(widget, imageName) {
+  const imageUrl = getImageUrl(imageName);
+  const image = Image.fromFile(imageUrl);
+  widget.backgroundImage = image;
 }
-
-async function createWidget() {
-  let widget = new ListWidget();
-  widget.backgroundColor = new Color(widgetBackgroundColor);
-  setWidgetBackground(widget, imageName);
-  widget.setPadding(16, 16, 16, 16);
-
-  // layout horizontally
-  const globalStack = widget.addStack();
-
-  if (showEventsView) {
-    await buildEventsView(globalStack);
-  }
-  if (showCalendarView) {
-    await buildCalendarView(globalStack);
-  }
-
-  return widget;
+function getImageUrl(name) {
+  const fm = FileManager.iCloud();
+  const dir = fm.documentsDirectory();
+  return fm.joinPath(dir, `${name}`);
 }
+var setWidgetBackground_default = setWidgetBackground;
 
-/**
- * Builds the events view
- *
- * @param  {WidgetStack} stack - onto which the events view is built
- */
-async function buildEventsView(stack) {
-  const leftStack = stack.addStack();
-  // push event view to the left
-  stack.addSpacer();
-
-  leftStack.layoutVertically();
-  // center the whole left part of the widget
-  leftStack.addSpacer();
-
-  const date = new Date();
-
-  let events = [];
-  if (showEventsOnlyForToday) {
-    events = await CalendarEvent.today([]);
-  } else {
-    let dateLimit = new Date();
-    dateLimit.setDate(dateLimit.getDate() + nextNumOfDays);
-    events = await CalendarEvent.between(date, dateLimit);
-  }
-
-  const futureEvents = [];
-  // if we show events for the whole week, then we need to filter allDay events
-  // to not show past allDay events
-  // if allDayEvent's start date is later than a day ago from now then show it
-  for (const event of events) {
-    if (
-      (showAllDayEvents &&
-        event.isAllDay &&
-        event.startDate.getTime() >
-          new Date(new Date().setDate(new Date().getDate() - 1))) ||
-      (event.endDate.getTime() > date.getTime() &&
-        !event.title.startsWith("Canceled:"))
-    ) {
-      futureEvents.push(event);
-    }
-  }
-
-  // if we have events today; else if we don't
-  if (futureEvents.length !== 0) {
-    // show the next 3 events at most
-    const numEvents = futureEvents.length > 3 ? 3 : futureEvents.length;
-    for (let i = 0; i < numEvents; i += 1) {
-      formatEvent(leftStack, futureEvents[i], textColor, opacity);
-      // don't add a spacer after the last event
-      if (i < numEvents - 1) {
-        leftStack.addSpacer(8);
-      }
-    }
-  } else {
-    addWidgetTextLine(leftStack, `No more events.`, {
-      color: textColor,
-      opacity,
-      font: Font.regularSystemFont(15),
-      align: "left",
-    });
-  }
-  // for centering
-  leftStack.addSpacer();
-}
-
-/**
- * Builds the calendar view
- *
- * @param  {WidgetStack} stack - onto which the calendar is built
- */
-async function buildCalendarView(stack) {
-  const rightStack = stack.addStack();
-  rightStack.layoutVertically();
-
-  const date = new Date();
-  const dateFormatter = new DateFormatter();
-  dateFormatter.dateFormat = "MMMM";
-
-  // if calendar is on a small widget make it a bit smaller to fit
-  const spacing = config.widgetFamily === "small" ? 18 : 19;
-
-  // Current month line
-  const monthLine = rightStack.addStack();
-  // since dates are centered in their squares we need to add some space
-  monthLine.addSpacer(4);
-  addWidgetTextLine(monthLine, dateFormatter.string(date).toUpperCase(), {
-    color: textColor,
-    textSize: 14,
-    font: Font.boldSystemFont(13),
-  });
-
-  const calendarStack = rightStack.addStack();
-  calendarStack.spacing = 2;
-
-  const month = buildMonthVertical();
-
-  const { eventCounts, intensity } = await countEvents();
-
-  for (let i = 0; i < month.length; i += 1) {
-    let weekdayStack = calendarStack.addStack();
-    weekdayStack.layoutVertically();
-
-    for (let j = 0; j < month[i].length; j += 1) {
-      let dayStack = weekdayStack.addStack();
-      dayStack.size = new Size(spacing, spacing);
-      dayStack.centerAlignContent();
-
-      // if the day is today, highlight it
-      if (month[i][j] === date.getDate().toString()) {
-        const highlightedDate = getDateImage(
-          month[i][j],
-          todayColor,
-          todayTextColor,
-          1
-        );
-        dayStack.addImage(highlightedDate);
-      } else if (j > 0 && month[i][j] !== " ") {
-        // every other date
-        const dateImage = getDateImage(
-          month[i][j],
-          eventCircleColor,
-          isWeekend(i) ? weekendDates : dateTextColor,
-          showEventCircles
-            ? eventCounts[parseInt(month[i][j]) - 1] * intensity
-            : 0
-        );
-        dayStack.addImage(dateImage);
-      } else {
-        // MTWTFSS line and empty dates from other months
-        addWidgetTextLine(dayStack, `${month[i][j]}`, {
-          color: isWeekend(i) ? weekendLetters : textColor,
-          opacity: isWeekend(i) ? weekendLetterOpacity : 1,
-          font: Font.boldSystemFont(10),
-          align: "center",
-        });
-      }
-    }
-  }
-}
-
-async function countEvents() {
-  const today = new Date();
-  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const firstOfNextMonth = new Date(
-    new Date(firstOfMonth).setMonth(firstOfMonth.getMonth() + 1)
-  );
-
-  let events = await CalendarEvent.between(firstOfMonth, firstOfNextMonth);
-
-  const eventCounts = events
-    .map((event) => {
-      if (event.isAllDay) {
-        const firstDay = event.startDate.getDate();
-        let lastDay = event.endDate.getDate();
-        const lastOfMonth =
-          new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate() + 1;
-        // if the last day goes into the next month, it can be less than first
-        // in this case we count to the end of the month
-        lastDay = lastDay < firstDay ? lastOfMonth : lastDay;
-        let days = [];
-        for (let i = firstDay; i < lastDay; i += 1) {
-          days.push(i);
-        }
-        return days;
-      } else {
-        return [event.startDate.getDate()];
-      }
-    })
-    .reduce(
-      (acc, dates) => {
-        dates.forEach((date) => {
-          // 0 indexed, so date in array is at post date-1
-          acc[date - 1] = acc[date - 1] + 1;
-        });
-        return acc;
-      },
-      Array.from(Array(31), () => 0)
-    );
-
-  const max = Math.max(...eventCounts);
-  const min = Math.min(...eventCounts);
-
-  // calculate an intensity coefficient based on the events' range for the
-  // current month. If the range is from 1 to 6, the coefficient is 0.17, the
-  // event background's alpha value will be 0.17 * numEvents that day
-  let intensity = 1 / (max - min + 1);
-  // for a low range the intensity would be closer to 1, so we limit the
-  // intensity at most to 0.2
-  intensity = intensity > 0.2 ? 0.2 : intensity;
-
-  return { eventCounts, intensity };
-}
-
-/**
- * If the week starts on a Sunday indeces 0 and 6 are for weekends
- * else indices 5 and 6
- *
- * @param  {number} index
- */
-function isWeekend(index) {
-  if (startWeekOnSunday) {
-    switch (index) {
-      case 0:
-      case 6:
-        return true;
-      default:
-        return false;
-    }
-  }
-  return index > 4;
-}
-
-/**
- * Creates an array of arrays, where the inner arrays include the same weekdays
- * along with a weekday identifier in the 0th position
- * [
- *   [ 'M', ' ', '7', '14', '21', '28' ],
- *   [ 'T', '1', '8', '15', '22', '29' ],
- *   [ 'W', '2', '9', '16', '23', '30' ],
- *   ...
- * ]
- *
- * @returns {Array<Array<string>>}
- */
-function buildMonthVertical() {
-  const today = new Date();
-  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-
-  let month = [["M"], ["T"], ["W"], ["T"], ["F"], ["S"]];
-  let index = 1;
-  let offset = 1;
-
-  // weekdays are 0 indexed starting with sunday
-  let firstDay = firstOfMonth.getDay() !== 0 ? firstOfMonth.getDay() : 7;
-
-  if (startWeekOnSunday) {
-    month.unshift(["S"]);
-    index = 0;
-    offset = 0;
-    firstDay = firstDay % 7;
-  } else {
-    month.push(["S"]);
-  }
-
-  let dayStackCounter = 0;
-
-  // fill with empty slots
-  for (; index < firstDay; index += 1) {
-    month[index - offset].push(" ");
-    dayStackCounter = (dayStackCounter + 1) % 7;
-  }
-
-  for (let date = 1; date <= lastOfMonth.getDate(); date += 1) {
-    month[dayStackCounter].push(`${date}`);
-    dayStackCounter = (dayStackCounter + 1) % 7;
-  }
-
-  const length = month.reduce(
-    (acc, dayStacks) => (dayStacks.length > acc ? dayStacks.length : acc),
-    0
-  );
-  month.forEach((dayStacks, index) => {
-    while (dayStacks.length < length) {
-      month[index].push(" ");
-    }
-  });
-
-  return month;
-}
-
-/**
- * Creates images for dates, depending on the number of events that day
- *
- * @param  {string} date - to draw into the circle
- * @param  {string} color - of the background
- * @param  {number} intensity - a calculated coefficient for alpha value
- * @param  {boolean} isToday - is it today's date, for highlighting
- *
- * @returns {Image} a circle with the date
- */
-function getDateImage(date, backgroundColor, textColor, intensity) {
-  const drawing = new DrawContext();
-  drawing.respectScreenScale = true;
-  const size = 50;
-  drawing.size = new Size(size, size);
-  drawing.opaque = false;
-
-  drawing.setFillColor(new Color(backgroundColor, intensity));
-  drawing.fillEllipse(new Rect(1, 1, size - 2, size - 2));
-
-  drawing.setFont(Font.boldSystemFont(25));
-  drawing.setTextAlignedCenter();
-  drawing.setTextColor(new Color(textColor));
-  drawing.drawTextInRect(date, new Rect(0, 10, size, size));
-
-  return drawing.getImage();
-}
-
-/**
- * formats the event times into just hours
- *
- * @param  {Date} date
- *
- * @returns {string} time
- */
-function formatTime(date) {
-  let dateFormatter = new DateFormatter();
-  dateFormatter.useNoDateStyle();
-  dateFormatter.useShortTimeStyle();
-  return dateFormatter.string(date);
-}
-
-/**
- * get suffix for a given date
- *
- * @param {number} date
- *
- * @returns {string} suffix
- */
-function getSuffix(date) {
-  if (date > 3 && date < 21) return "th";
-  switch (date % 10) {
-    case 1:
-      return "st";
-    case 2:
-      return "nd";
-    case 3:
-      return "rd";
-    default:
-      return "th";
-  }
-}
-
-/**
- * Adds a event name along with start and end times to widget stack
- *
- * @param  {WidgetStack} stack - onto which the event is added
- * @param  {CalendarEvent} event - an event to add on the stack
- * @param  {number} opacity - text opacity
- */
-function formatEvent(stack, event, color, opacity) {
-  let eventLine = stack.addStack();
-
-  if (showCalendarBullet) {
-    // show calendar bullet in front of event name
-    addWidgetTextLine(eventLine, "● ", {
-      color: event.calendar.color.hex,
-      font: Font.mediumSystemFont(14),
-      lineLimit: showCompleteTitle ? 0 : 1,
-    });
-  }
-
-  // event title
-  addWidgetTextLine(eventLine, event.title, {
-    color,
-    font: Font.mediumSystemFont(14),
-    lineLimit: showCompleteTitle ? 0 : 1,
-  });
-  // event duration
-  let time;
-  if (event.isAllDay) {
-    time = "All Day";
-  } else {
-    time = `${formatTime(event.startDate)} - ${formatTime(event.endDate)}`;
-  }
-
-  const today = new Date().getDate();
-  const eventDate = event.startDate.getDate();
-  // if a future event is not today, we want to show it's date
-  if (eventDate !== today) {
-    time = `${eventDate}${getSuffix(eventDate)} ${time}`;
-  }
-
-  // event time
-  addWidgetTextLine(stack, time, {
-    color,
-    opacity,
-    font: Font.regularSystemFont(14),
-  });
-}
-
+// src/addWidgetTextLine.ts
 function addWidgetTextLine(
-  widget,
   text,
+  widget,
   {
-    color = "#ffffff",
+    textColor = "#ffffff",
     textSize = 12,
     opacity = 1,
     align,
-    font = "",
+    font,
     lineLimit = 0,
   }
 ) {
-  let textLine = widget.addText(text);
-  textLine.textColor = new Color(color);
+  const textLine = widget.addText(text);
+  textLine.textColor = new Color(textColor, 1);
   textLine.lineLimit = lineLimit;
   if (typeof font === "string") {
     textLine.font = new Font(font, textSize);
@@ -497,14 +80,472 @@ function addWidgetTextLine(
       break;
   }
 }
+var addWidgetTextLine_default = addWidgetTextLine;
 
-function getImageUrl(name) {
-  let fm = FileManager.iCloud();
-  let dir = fm.documentsDirectory();
-  return fm.joinPath(dir, `${name}`);
+// src/getMonthBoundaries.ts
+function getMonthBoundaries(date) {
+  const firstOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+  const lastOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  return { firstOfMonth, lastOfMonth };
+}
+var getMonthBoundaries_default = getMonthBoundaries;
+
+// src/getMonthOffset.ts
+function getMonthOffset(date, offset) {
+  const newDate = new Date(date);
+  let offsetMonth = date.getMonth() + offset;
+  if (offsetMonth < 0) {
+    offsetMonth += 12;
+    newDate.setFullYear(date.getFullYear() - 1);
+  } else if (offsetMonth > 11) {
+    offsetMonth -= 12;
+    newDate.setFullYear(date.getFullYear() + 1);
+  }
+  newDate.setMonth(offsetMonth);
+  return newDate;
+}
+var getMonthOffset_default = getMonthOffset;
+
+// src/getWeekLetters.ts
+function getWeekLetters(locale = "en-US", startWeekOnSunday = false) {
+  let week = [];
+  for (let i = 1; i <= 7; i += 1) {
+    const day = new Date(`2021-02-0${i}`);
+    week.push(day.toLocaleDateString(locale, { weekday: "long" }));
+  }
+  week = week.map((day) => [day.slice(0, 1).toUpperCase()]);
+  if (startWeekOnSunday) {
+    const sunday = week.pop();
+    week.unshift(sunday);
+  }
+  return week;
+}
+var getWeekLetters_default = getWeekLetters;
+
+// src/buildCalendar.ts
+function buildCalendar(
+  date = new Date(),
+  {
+    locale,
+    showPrevMonth = true,
+    showNextMonth = true,
+    startWeekOnSunday = false,
+  }
+) {
+  const currentMonth = getMonthBoundaries_default(date);
+  const prevMonth = getMonthBoundaries_default(
+    getMonthOffset_default(date, -1)
+  );
+  const calendar = getWeekLetters_default(locale, startWeekOnSunday);
+  let daysFromPrevMonth = 0;
+  let daysFromNextMonth = 0;
+  let index = 1;
+  let offset = 1;
+  let firstDay =
+    currentMonth.firstOfMonth.getDay() !== 0
+      ? currentMonth.firstOfMonth.getDay()
+      : 7;
+  if (startWeekOnSunday) {
+    index = 0;
+    offset = 0;
+    firstDay = firstDay % 7;
+  }
+  let dayStackCounter = 0;
+  for (; index < firstDay; index += 1) {
+    if (showPrevMonth) {
+      calendar[index - offset].push(
+        `${prevMonth.lastOfMonth.getMonth()}/${
+          prevMonth.lastOfMonth.getDate() - firstDay + 1 + index
+        }`
+      );
+      daysFromPrevMonth += 1;
+    } else {
+      calendar[index - offset].push(" ");
+    }
+    dayStackCounter = (dayStackCounter + 1) % 7;
+  }
+  for (
+    let indexDate = 1;
+    indexDate <= currentMonth.lastOfMonth.getDate();
+    indexDate += 1
+  ) {
+    calendar[dayStackCounter].push(`${date.getMonth()}/${indexDate}`);
+    dayStackCounter = (dayStackCounter + 1) % 7;
+  }
+  let longestColumn = calendar.reduce(
+    (acc, dayStacks) => (dayStacks.length > acc ? dayStacks.length : acc),
+    0
+  );
+  if (showNextMonth && longestColumn < 6) {
+    longestColumn += 1;
+  }
+  const nextMonth = getMonthOffset_default(date, 1);
+  calendar.forEach((dayStacks, index2) => {
+    while (dayStacks.length < longestColumn) {
+      if (showNextMonth) {
+        daysFromNextMonth += 1;
+        calendar[index2].push(`${nextMonth.getMonth()}/${daysFromNextMonth}`);
+      } else {
+        calendar[index2].push(" ");
+      }
+    }
+  });
+  return { calendar, daysFromPrevMonth, daysFromNextMonth };
+}
+var buildCalendar_default = buildCalendar;
+
+// src/countEvents.ts
+async function countEvents(date, extendToPrev = 0, extendToNext = 0) {
+  const { firstOfMonth } = getMonthBoundaries_default(date);
+  const { startDate, endDate } = extendBoundaries(
+    firstOfMonth,
+    extendToPrev,
+    extendToNext
+  );
+  const events = await CalendarEvent.between(startDate, endDate);
+  const eventCounts = new Map();
+  events.forEach((event) => {
+    if (event.isAllDay) {
+      const date2 = event.startDate;
+      do {
+        updateEventCounts(date2, eventCounts);
+        date2.setDate(date2.getDate() + 1);
+      } while (date2 < event.endDate);
+    } else {
+      updateEventCounts(event.startDate, eventCounts);
+    }
+  });
+  const intensity = calculateIntensity(eventCounts);
+  return { eventCounts, intensity };
+}
+function extendBoundaries(first, extendToPrev, extendToNext) {
+  const startDate = new Date(
+    first.getFullYear(),
+    first.getMonth(),
+    first.getDay() - extendToPrev
+  );
+  const endDate = new Date(
+    first.getFullYear(),
+    first.getMonth() + 1,
+    first.getDay() + extendToNext
+  );
+  return { startDate, endDate };
+}
+function updateEventCounts(date, eventCounts) {
+  if (eventCounts.has(`${date.getMonth()}/${date.getDate()}`)) {
+    eventCounts.set(
+      `${date.getMonth()}/${date.getDate()}`,
+      eventCounts.get(`${date.getMonth()}/${date.getDate()}`) + 1
+    );
+  } else {
+    eventCounts.set(`${date.getMonth()}/${date.getDate()}`, 1);
+  }
+}
+function calculateIntensity(eventCounts) {
+  const counter = eventCounts.values();
+  const counts = [];
+  for (const count of counter) {
+    counts.push(count);
+  }
+  const max = Math.max(...counts);
+  const min = Math.min(...counts);
+  let intensity = 1 / (max - min + 1);
+  intensity = intensity < 0.3 ? 0.3 : intensity;
+  return intensity;
+}
+var countEvents_default = countEvents;
+
+// src/createDateImage.ts
+function createDateImage(
+  text,
+  { backgroundColor, textColor, intensity, toFullSize }
+) {
+  const size = toFullSize ? 50 : 35;
+  const drawing = new DrawContext();
+  drawing.respectScreenScale = true;
+  const contextSize = 50;
+  drawing.size = new Size(contextSize, contextSize);
+  drawing.opaque = false;
+  drawing.setFillColor(new Color(backgroundColor, intensity));
+  drawing.fillEllipse(
+    new Rect(
+      (contextSize - (size - 2)) / 2,
+      (contextSize - (size - 2)) / 2,
+      size - 2,
+      size - 2
+    )
+  );
+  drawing.setFont(Font.boldSystemFont(size * 0.5));
+  drawing.setTextAlignedCenter();
+  drawing.setTextColor(new Color(textColor, 1));
+  const textBox = new Rect(
+    (contextSize - size) / 2,
+    (contextSize - size * 0.5) / 2 - 3,
+    size,
+    size * 0.5
+  );
+  drawing.drawTextInRect(text, textBox);
+  return drawing.getImage();
+}
+var createDateImage_default = createDateImage;
+
+// src/isDateFromBoundingMonth.ts
+function isDateFromBoundingMonth(row, column, date, calendar) {
+  const [month] = calendar[row][column].split("/");
+  const currentMonth = date.getMonth().toString();
+  return month === currentMonth;
+}
+var isDateFromBoundingMonth_default = isDateFromBoundingMonth;
+
+// src/isWeekend.ts
+function isWeekend(index, startWeekOnSunday = false) {
+  if (startWeekOnSunday) {
+    switch (index) {
+      case 0:
+      case 6:
+        return true;
+      default:
+        return false;
+    }
+  }
+  return index > 4;
+}
+var isWeekend_default = isWeekend;
+
+// src/buildCalendarView.ts
+async function buildCalendarView(date, stack, settings2) {
+  const rightStack = stack.addStack();
+  rightStack.layoutVertically();
+  const dateFormatter = new DateFormatter();
+  dateFormatter.dateFormat = "MMMM";
+  const spacing = config.widgetFamily === "small" ? 18 : 19;
+  const monthLine = rightStack.addStack();
+  monthLine.addSpacer(4);
+  addWidgetTextLine_default(
+    dateFormatter.string(date).toUpperCase(),
+    monthLine,
+    {
+      textColor: settings2.textColor,
+      textSize: 14,
+      font: Font.boldSystemFont(13),
+    }
+  );
+  const calendarStack = rightStack.addStack();
+  calendarStack.spacing = 2;
+  const {
+    calendar,
+    daysFromPrevMonth,
+    daysFromNextMonth,
+  } = buildCalendar_default(date, settings2);
+  const { eventCounts, intensity } = await countEvents_default(
+    date,
+    daysFromPrevMonth,
+    daysFromNextMonth
+  );
+  for (let i = 0; i < calendar.length; i += 1) {
+    const weekdayStack = calendarStack.addStack();
+    weekdayStack.layoutVertically();
+    for (let j = 0; j < calendar[i].length; j += 1) {
+      const dayStack = weekdayStack.addStack();
+      dayStack.size = new Size(spacing, spacing);
+      dayStack.centerAlignContent();
+      const day = calendar[i][j].split("/").reverse()[0];
+      if (calendar[i][j] === `${date.getMonth()}/${date.getDate()}`) {
+        if (settings2.markToday) {
+          const highlightedDate = createDateImage_default(day, {
+            backgroundColor: settings2.todayCircleColor,
+            textColor: settings2.todayTextColor,
+            intensity: 1,
+            toFullSize: true,
+          });
+          dayStack.addImage(highlightedDate);
+        } else {
+          addWidgetTextLine_default(day, dayStack, {
+            textColor: settings2.todayTextColor,
+            font: Font.boldSystemFont(10),
+            align: "center",
+          });
+        }
+      } else if (j > 0 && calendar[i][j] !== " ") {
+        const toFullSize = isDateFromBoundingMonth_default(
+          i,
+          j,
+          date,
+          calendar
+        );
+        const dateImage = createDateImage_default(day, {
+          backgroundColor: settings2.eventCircleColor,
+          textColor: isWeekend_default(i, settings2.startWeekOnSunday)
+            ? settings2.weekendDates
+            : settings2.weekdayTextColor,
+          intensity: settings2.showEventCircles
+            ? eventCounts.get(calendar[i][j]) * intensity
+            : 0,
+          toFullSize,
+        });
+        dayStack.addImage(dateImage);
+      } else {
+        addWidgetTextLine_default(day, dayStack, {
+          textColor: isWeekend_default(i, settings2.startWeekOnSunday)
+            ? settings2.weekendLetters
+            : settings2.textColor,
+          opacity: isWeekend_default(i, settings2.startWeekOnSunday)
+            ? settings2.weekendLetterOpacity
+            : 1,
+          font: Font.boldSystemFont(10),
+          align: "center",
+        });
+      }
+    }
+  }
+}
+var buildCalendarView_default = buildCalendarView;
+
+// src/formatTime.ts
+function formatTime(date) {
+  const dateFormatter = new DateFormatter();
+  dateFormatter.useNoDateStyle();
+  dateFormatter.useShortTimeStyle();
+  return dateFormatter.string(date);
+}
+var formatTime_default = formatTime;
+
+// src/getSuffix.ts
+function getSuffix(date) {
+  if (date > 3 && date < 21) return "th";
+  switch (date % 10) {
+    case 1:
+      return "st";
+    case 2:
+      return "nd";
+    case 3:
+      return "rd";
+    default:
+      return "th";
+  }
+}
+var getSuffix_default = getSuffix;
+
+// src/formatEvent.ts
+function formatEvent(
+  stack,
+  event,
+  { opacity, textColor, showCalendarBullet, showCompleteTitle }
+) {
+  const eventLine = stack.addStack();
+  if (showCalendarBullet) {
+    addWidgetTextLine_default("\u25CF ", eventLine, {
+      textColor: event.calendar.color.hex,
+      font: Font.mediumSystemFont(14),
+      lineLimit: showCompleteTitle ? 0 : 1,
+    });
+  }
+  addWidgetTextLine_default(event.title, eventLine, {
+    textColor,
+    font: Font.mediumSystemFont(14),
+    lineLimit: showCompleteTitle ? 0 : 1,
+  });
+  let time;
+  if (event.isAllDay) {
+    time = "All Day";
+  } else {
+    time = `${formatTime_default(event.startDate)} - ${formatTime_default(
+      event.endDate
+    )}`;
+  }
+  const today = new Date().getDate();
+  const eventDate = event.startDate.getDate();
+  if (eventDate !== today) {
+    time = `${eventDate}${getSuffix_default(eventDate)} ${time}`;
+  }
+  addWidgetTextLine_default(time, stack, {
+    textColor,
+    opacity,
+    font: Font.regularSystemFont(14),
+  });
+}
+var formatEvent_default = formatEvent;
+
+// src/buildEventsView.ts
+async function buildEventsView(date, stack, settings2) {
+  const leftStack = stack.addStack();
+  stack.addSpacer();
+  leftStack.layoutVertically();
+  leftStack.addSpacer();
+  let events = [];
+  if (settings2.showEventsOnlyForToday) {
+    events = await CalendarEvent.today([]);
+  } else {
+    const dateLimit = new Date();
+    dateLimit.setDate(dateLimit.getDate() + settings2.nextNumOfDays);
+    events = await CalendarEvent.between(date, dateLimit);
+  }
+  const futureEvents = [];
+  for (const event of events) {
+    if (
+      (settings2.showAllDayEvents &&
+        event.isAllDay &&
+        event.startDate.getTime() >
+          new Date(new Date().setDate(new Date().getDate() - 1)).getTime()) ||
+      (event.endDate.getTime() > date.getTime() &&
+        !event.title.startsWith("Canceled:"))
+    ) {
+      futureEvents.push(event);
+    }
+  }
+  if (futureEvents.length !== 0) {
+    const numEvents = futureEvents.length > 3 ? 3 : futureEvents.length;
+    for (let i = 0; i < numEvents; i += 1) {
+      formatEvent_default(leftStack, futureEvents[i], settings2);
+      if (i < numEvents - 1) {
+        leftStack.addSpacer(8);
+      }
+    }
+  } else {
+    addWidgetTextLine_default(`No more events.`, leftStack, {
+      textColor: settings2.textColor,
+      opacity: settings2.eventDateTimeOpacity,
+      font: Font.regularSystemFont(15),
+    });
+  }
+  leftStack.addSpacer();
+}
+var buildEventsView_default = buildEventsView;
+
+// src/index.ts
+async function main() {
+  if (config.runsInWidget) {
+    const widget = await createWidget();
+    Script.setWidget(widget);
+    Script.complete();
+  } else if (settings_default.debug) {
+    Script.complete();
+    const widget = await createWidget();
+    await widget.presentMedium();
+  } else {
+    const appleDate = new Date("2001/01/01");
+    const timestamp = (new Date().getTime() - appleDate.getTime()) / 1e3;
+    const callback = new CallbackURL(
+      `${settings_default.calendarApp}:` + timestamp
+    );
+    callback.open();
+    Script.complete();
+  }
+}
+async function createWidget() {
+  const widget = new ListWidget();
+  widget.backgroundColor = new Color(settings_default.widgetBackgroundColor, 1);
+  setWidgetBackground_default(widget, settings_default.backgroundImage);
+  widget.setPadding(16, 16, 16, 16);
+  const today = new Date();
+  const globalStack = widget.addStack();
+  if (settings_default.showEventsView) {
+    await buildEventsView_default(today, globalStack, settings_default);
+  }
+  if (settings_default.showCalendarView) {
+    await buildCalendarView_default(today, globalStack, settings_default);
+  }
+  return widget;
 }
 
-function setWidgetBackground(widget, imageName) {
-  const imageUrl = getImageUrl(imageName);
-  widget.backgroundImage = Image.fromFile(imageUrl);
-}
+await main();
