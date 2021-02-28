@@ -11,7 +11,7 @@ async function buildEventsView(
   date: Date,
   stack: WidgetStack,
   settings: Settings
-) {
+): Promise<void> {
   const leftStack = stack.addStack();
   // push event view to the left
   stack.addSpacer();
@@ -24,7 +24,7 @@ async function buildEventsView(
   if (settings.showEventsOnlyForToday) {
     events = await CalendarEvent.today([]);
   } else {
-    let dateLimit = new Date();
+    const dateLimit = new Date();
     dateLimit.setDate(dateLimit.getDate() + settings.nextNumOfDays);
     events = await CalendarEvent.between(date, dateLimit);
   }
@@ -33,6 +33,7 @@ async function buildEventsView(
   // if we show events for the whole week, then we need to filter allDay events
   // to not show past allDay events
   // if allDayEvent's start date is later than a day ago from now then show it
+  // TODO clear up this logic
   for (const event of events) {
     if (
       (settings.showAllDayEvents &&
@@ -40,8 +41,7 @@ async function buildEventsView(
         event.startDate.getTime() >
           new Date(new Date().setDate(new Date().getDate() - 1)).getTime()) ||
       (event.endDate.getTime() > date.getTime() &&
-        !event.title.startsWith("Canceled:") &&
-        event.calendar.title === "Test")
+        !event.title.startsWith("Canceled:"))
     ) {
       futureEvents.push(event);
     }

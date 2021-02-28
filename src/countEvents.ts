@@ -18,19 +18,17 @@ async function countEvents(
   );
   const events = await CalendarEvent.between(startDate, endDate);
   const eventCounts: EventCounts = new Map();
-  events
-    .filter((event) => event.calendar.title === "Test")
-    .forEach((event) => {
-      if (event.isAllDay) {
-        const date = event.startDate;
-        do {
-          updateEventCounts(date, eventCounts);
-          date.setDate(date.getDate() + 1);
-        } while (date < event.endDate);
-      } else {
-        updateEventCounts(event.startDate, eventCounts);
-      }
-    });
+  events.forEach((event) => {
+    if (event.isAllDay) {
+      const date = event.startDate;
+      do {
+        updateEventCounts(date, eventCounts);
+        date.setDate(date.getDate() + 1);
+      } while (date < event.endDate);
+    } else {
+      updateEventCounts(event.startDate, eventCounts);
+    }
+  });
 
   const intensity = calculateIntensity(eventCounts);
 

@@ -5,12 +5,12 @@ import buildEventsView from "./buildEventsView";
 
 async function main() {
   if (config.runsInWidget) {
-    let widget = await createWidget();
+    const widget = await createWidget();
     Script.setWidget(widget);
     Script.complete();
   } else if (settings.debug) {
     Script.complete();
-    let widget = await createWidget();
+    const widget = await createWidget();
     await widget.presentMedium();
   } else {
     const appleDate = new Date("2001/01/01");
@@ -22,7 +22,7 @@ async function main() {
 }
 
 async function createWidget() {
-  let widget = new ListWidget();
+  const widget = new ListWidget();
   widget.backgroundColor = new Color(settings.widgetBackgroundColor, 1);
   setWidgetBackground(widget, settings.backgroundImage);
   widget.setPadding(16, 16, 16, 16);

@@ -1,9 +1,7 @@
 // src/settings.ts
-var params = JSON.parse(args.widgetParameter) || {
-  bg: "widget-bgs/light-1121.jpg",
-};
+var params = JSON.parse(args.widgetParameter) || { bg: "transparent.jpg" };
 var settings = {
-  debug: true,
+  debug: false,
   calendarApp: "calshow",
   backgroundImage: params.bg,
   widgetBackgroundColor: "#000000",
@@ -23,11 +21,11 @@ var settings = {
   showCalendarView: params.view ? params.view === "cal" : true,
   showAllDayEvents: true,
   showCalendarBullet: true,
-  startWeekOnSunday: true,
+  startWeekOnSunday: false,
   showEventsOnlyForToday: false,
   nextNumOfDays: 7,
   showCompleteTitle: false,
-  showPrevMonth: false,
+  showPrevMonth: true,
   showNextMonth: true,
 };
 var settings_default = settings;
@@ -39,8 +37,8 @@ function setWidgetBackground(widget, imageName) {
   widget.backgroundImage = image;
 }
 function getImageUrl(name) {
-  let fm = FileManager.iCloud();
-  let dir = fm.documentsDirectory();
+  const fm = FileManager.iCloud();
+  const dir = fm.documentsDirectory();
   return fm.joinPath(dir, `${name}`);
 }
 var setWidgetBackground_default = setWidgetBackground;
@@ -206,19 +204,17 @@ async function countEvents(date, extendToPrev = 0, extendToNext = 0) {
   );
   const events = await CalendarEvent.between(startDate, endDate);
   const eventCounts = new Map();
-  events
-    .filter((event) => event.calendar.title === "Test")
-    .forEach((event) => {
-      if (event.isAllDay) {
-        const date2 = event.startDate;
-        do {
-          updateEventCounts(date2, eventCounts);
-          date2.setDate(date2.getDate() + 1);
-        } while (date2 < event.endDate);
-      } else {
-        updateEventCounts(event.startDate, eventCounts);
-      }
-    });
+  events.forEach((event) => {
+    if (event.isAllDay) {
+      const date2 = event.startDate;
+      do {
+        updateEventCounts(date2, eventCounts);
+        date2.setDate(date2.getDate() + 1);
+      } while (date2 < event.endDate);
+    } else {
+      updateEventCounts(event.startDate, eventCounts);
+    }
+  });
   const intensity = calculateIntensity(eventCounts);
   return { eventCounts, intensity };
 }
@@ -407,7 +403,7 @@ var buildCalendarView_default = buildCalendarView;
 
 // src/formatTime.ts
 function formatTime(date) {
-  let dateFormatter = new DateFormatter();
+  const dateFormatter = new DateFormatter();
   dateFormatter.useNoDateStyle();
   dateFormatter.useShortTimeStyle();
   return dateFormatter.string(date);
@@ -480,7 +476,7 @@ async function buildEventsView(date, stack, settings2) {
   if (settings2.showEventsOnlyForToday) {
     events = await CalendarEvent.today([]);
   } else {
-    let dateLimit = new Date();
+    const dateLimit = new Date();
     dateLimit.setDate(dateLimit.getDate() + settings2.nextNumOfDays);
     events = await CalendarEvent.between(date, dateLimit);
   }
@@ -492,8 +488,7 @@ async function buildEventsView(date, stack, settings2) {
         event.startDate.getTime() >
           new Date(new Date().setDate(new Date().getDate() - 1)).getTime()) ||
       (event.endDate.getTime() > date.getTime() &&
-        !event.title.startsWith("Canceled:") &&
-        event.calendar.title === "Test")
+        !event.title.startsWith("Canceled:"))
     ) {
       futureEvents.push(event);
     }
@@ -520,12 +515,12 @@ var buildEventsView_default = buildEventsView;
 // src/index.ts
 async function main() {
   if (config.runsInWidget) {
-    let widget = await createWidget();
+    const widget = await createWidget();
     Script.setWidget(widget);
     Script.complete();
   } else if (settings_default.debug) {
     Script.complete();
-    let widget = await createWidget();
+    const widget = await createWidget();
     await widget.presentMedium();
   } else {
     const appleDate = new Date("2001/01/01");
@@ -538,7 +533,7 @@ async function main() {
   }
 }
 async function createWidget() {
-  let widget = new ListWidget();
+  const widget = new ListWidget();
   widget.backgroundColor = new Color(settings_default.widgetBackgroundColor, 1);
   setWidgetBackground_default(widget, settings_default.backgroundImage);
   widget.setPadding(16, 16, 16, 16);

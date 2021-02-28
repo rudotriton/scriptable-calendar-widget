@@ -3,7 +3,7 @@
  *
  */
 function formatTime(date: Date): string {
-  let dateFormatter = new DateFormatter();
+  const dateFormatter = new DateFormatter();
   dateFormatter.useNoDateStyle();
   dateFormatter.useShortTimeStyle();
   return dateFormatter.string(date);

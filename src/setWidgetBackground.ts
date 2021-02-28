@@ -13,8 +13,8 @@ function setWidgetBackground(widget: ListWidget, imageName: string): void {
  *
  */
 function getImageUrl(name: string): string {
-  let fm: FileManager = FileManager.iCloud();
-  let dir: string = fm.documentsDirectory();
+  const fm: FileManager = FileManager.iCloud();
+  const dir: string = fm.documentsDirectory();
   return fm.joinPath(dir, `${name}`);
 }
 
