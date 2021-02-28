@@ -27,7 +27,7 @@ var settings = {
   showEventsOnlyForToday: false,
   nextNumOfDays: 7,
   showCompleteTitle: false,
-  showPrevMonth: true,
+  showPrevMonth: false,
   showNextMonth: true,
 };
 var settings_default = settings;
@@ -248,7 +248,7 @@ function updateEventCounts(date, eventCounts) {
 function calculateIntensity(eventCounts) {
   const counter = eventCounts.values();
   const counts = [];
-  for (let count of counter) {
+  for (const count of counter) {
     counts.push(count);
   }
   const max = Math.max(...counts);
@@ -261,25 +261,45 @@ var countEvents_default = countEvents;
 
 // src/createDateImage.ts
 function createDateImage(
-  date,
-  backgroundColor,
-  textColor,
-  intensity,
-  size = 50
+  text,
+  { backgroundColor, textColor, intensity, toFullSize }
 ) {
+  const size = toFullSize ? 50 : 35;
   const drawing = new DrawContext();
   drawing.respectScreenScale = true;
-  drawing.size = new Size(size, size);
+  const contextSize = 50;
+  drawing.size = new Size(contextSize, contextSize);
   drawing.opaque = false;
   drawing.setFillColor(new Color(backgroundColor, intensity));
-  drawing.fillEllipse(new Rect(1, 1, size - 2, size - 2));
-  drawing.setFont(Font.boldSystemFont(25));
+  drawing.fillEllipse(
+    new Rect(
+      (contextSize - (size - 2)) / 2,
+      (contextSize - (size - 2)) / 2,
+      size - 2,
+      size - 2
+    )
+  );
+  drawing.setFont(Font.boldSystemFont(size * 0.5));
   drawing.setTextAlignedCenter();
   drawing.setTextColor(new Color(textColor, 1));
-  drawing.drawTextInRect(date, new Rect(0, 10, size, size));
+  const textBox = new Rect(
+    (contextSize - size) / 2,
+    (contextSize - size * 0.5) / 2 - 3,
+    size,
+    size * 0.5
+  );
+  drawing.drawTextInRect(text, textBox);
   return drawing.getImage();
 }
 var createDateImage_default = createDateImage;
+
+// src/isDateFromBoundingMonth.ts
+function isDateFromBoundingMonth(row, column, date, calendar) {
+  const [month] = calendar[row][column].split("/");
+  const currentMonth = date.getMonth().toString();
+  return month === currentMonth;
+}
+var isDateFromBoundingMonth_default = isDateFromBoundingMonth;
 
 // src/isWeekend.ts
 function isWeekend(index, startWeekOnSunday = false) {
@@ -327,21 +347,21 @@ async function buildCalendarView(date, stack, settings2) {
     daysFromNextMonth
   );
   for (let i = 0; i < calendar.length; i += 1) {
-    let weekdayStack = calendarStack.addStack();
+    const weekdayStack = calendarStack.addStack();
     weekdayStack.layoutVertically();
     for (let j = 0; j < calendar[i].length; j += 1) {
-      let dayStack = weekdayStack.addStack();
+      const dayStack = weekdayStack.addStack();
       dayStack.size = new Size(spacing, spacing);
       dayStack.centerAlignContent();
       const day = calendar[i][j].split("/").reverse()[0];
       if (calendar[i][j] === `${date.getMonth()}/${date.getDate()}`) {
         if (settings2.markToday) {
-          const highlightedDate = createDateImage_default(
-            day,
-            settings2.todayCircleColor,
-            settings2.todayTextColor,
-            1
-          );
+          const highlightedDate = createDateImage_default(day, {
+            backgroundColor: settings2.todayCircleColor,
+            textColor: settings2.todayTextColor,
+            intensity: 1,
+            toFullSize: true,
+          });
           dayStack.addImage(highlightedDate);
         } else {
           addWidgetTextLine_default(day, dayStack, {
@@ -351,16 +371,22 @@ async function buildCalendarView(date, stack, settings2) {
           });
         }
       } else if (j > 0 && calendar[i][j] !== " ") {
-        const dateImage = createDateImage_default(
-          day,
-          settings2.eventCircleColor,
-          isWeekend_default(i, settings2.startWeekOnSunday)
+        const toFullSize = isDateFromBoundingMonth_default(
+          i,
+          j,
+          date,
+          calendar
+        );
+        const dateImage = createDateImage_default(day, {
+          backgroundColor: settings2.eventCircleColor,
+          textColor: isWeekend_default(i, settings2.startWeekOnSunday)
             ? settings2.weekendDates
             : settings2.weekdayTextColor,
-          settings2.showEventCircles
+          intensity: settings2.showEventCircles
             ? eventCounts.get(calendar[i][j]) * intensity
-            : 0
-        );
+            : 0,
+          toFullSize,
+        });
         dayStack.addImage(dateImage);
       } else {
         addWidgetTextLine_default(day, dayStack, {

@@ -78,7 +78,7 @@ function updateEventCounts(date: Date, eventCounts: EventCounts) {
 function calculateIntensity(eventCounts: EventCounts): number {
   const counter = eventCounts.values();
   const counts = [];
-  for (let count of counter) {
+  for (const count of counter) {
     counts.push(count);
   }
   const max = Math.max(...counts);

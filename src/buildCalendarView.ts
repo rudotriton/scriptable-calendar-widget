@@ -2,6 +2,7 @@ import addWidgetTextLine from "./addWidgetTextLine";
 import buildCalendar from "./buildCalendar";
 import countEvents from "./countEvents";
 import createDateImage from "./createDateImage";
+import isDateFromBoundingMonth from "./isDateFromBoundingMonth";
 import isWeekend from "./isWeekend";
 import { Settings } from "./settings";
 
@@ -14,7 +15,7 @@ async function buildCalendarView(
   date: Date,
   stack: WidgetStack,
   settings: Settings
-) {
+): Promise<void> {
   const rightStack = stack.addStack();
   rightStack.layoutVertically();
 
@@ -49,11 +50,11 @@ async function buildCalendarView(
   );
 
   for (let i = 0; i < calendar.length; i += 1) {
-    let weekdayStack = calendarStack.addStack();
+    const weekdayStack = calendarStack.addStack();
     weekdayStack.layoutVertically();
 
     for (let j = 0; j < calendar[i].length; j += 1) {
-      let dayStack = weekdayStack.addStack();
+      const dayStack = weekdayStack.addStack();
       dayStack.size = new Size(spacing, spacing);
       dayStack.centerAlignContent();
 
@@ -63,12 +64,12 @@ async function buildCalendarView(
       // if the day is today, highlight it
       if (calendar[i][j] === `${date.getMonth()}/${date.getDate()}`) {
         if (settings.markToday) {
-          const highlightedDate = createDateImage(
-            day,
-            settings.todayCircleColor,
-            settings.todayTextColor,
-            1
-          );
+          const highlightedDate = createDateImage(day, {
+            backgroundColor: settings.todayCircleColor,
+            textColor: settings.todayTextColor,
+            intensity: 1,
+            toFullSize: true,
+          });
           dayStack.addImage(highlightedDate);
         } else {
           addWidgetTextLine(day, dayStack, {
@@ -77,19 +78,20 @@ async function buildCalendarView(
             align: "center",
           });
         }
-        // j == 0, contains the letters
+        // j == 0, contains the letters, so this creates every other date
       } else if (j > 0 && calendar[i][j] !== " ") {
-        // every other date
-        const dateImage = createDateImage(
-          day,
-          settings.eventCircleColor,
-          isWeekend(i, settings.startWeekOnSunday)
+        const toFullSize = isDateFromBoundingMonth(i, j, date, calendar);
+
+        const dateImage = createDateImage(day, {
+          backgroundColor: settings.eventCircleColor,
+          textColor: isWeekend(i, settings.startWeekOnSunday)
             ? settings.weekendDates
             : settings.weekdayTextColor,
-          settings.showEventCircles
+          intensity: settings.showEventCircles
             ? eventCounts.get(calendar[i][j]) * intensity
-            : 0
-        );
+            : 0,
+          toFullSize,
+        });
         dayStack.addImage(dateImage);
       } else {
         // first line and empty dates from other months

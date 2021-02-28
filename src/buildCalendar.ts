@@ -3,7 +3,7 @@ import getMonthOffset from "./getMonthOffset";
 import getWeekLetters from "./getWeekLetters";
 import { Settings } from "./settings";
 
-interface CalendarInfo {
+export interface CalendarInfo {
   calendar: string[][];
   daysFromPrevMonth: number;
   daysFromNextMonth: number;
