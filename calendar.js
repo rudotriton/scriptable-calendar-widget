@@ -430,7 +430,7 @@ var getSuffix_default = getSuffix;
 function formatEvent(
   stack,
   event,
-  { opacity, textColor, showCalendarBullet, showCompleteTitle }
+  { eventDateTimeOpacity, textColor, showCalendarBullet, showCompleteTitle }
 ) {
   const eventLine = stack.addStack();
   if (showCalendarBullet) {
@@ -460,7 +460,7 @@ function formatEvent(
   }
   addWidgetTextLine_default(time, stack, {
     textColor,
-    opacity,
+    opacity: eventDateTimeOpacity,
     font: Font.regularSystemFont(14),
   });
 }
