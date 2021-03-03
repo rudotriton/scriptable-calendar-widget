@@ -11,7 +11,7 @@ function formatEvent(
   stack: WidgetStack,
   event: CalendarEvent,
   {
-    opacity,
+    eventDateTimeOpacity,
     textColor,
     showCalendarBullet,
     showCompleteTitle,
@@ -52,7 +52,7 @@ function formatEvent(
   // event time
   addWidgetTextLine(time, stack, {
     textColor,
-    opacity,
+    opacity: eventDateTimeOpacity,
     font: Font.regularSystemFont(14),
   });
 }
