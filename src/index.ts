@@ -1,16 +1,14 @@
+import buildWidget from "./buildWidget";
 import settings from "./settings";
-import setWidgetBackground from "./setWidgetBackground";
-import buildCalendarView from "./buildCalendarView";
-import buildEventsView from "./buildEventsView";
 
 async function main() {
   if (config.runsInWidget) {
-    const widget = await createWidget();
+    const widget = await buildWidget(settings);
     Script.setWidget(widget);
     Script.complete();
   } else if (settings.debug) {
     Script.complete();
-    const widget = await createWidget();
+    const widget = await buildWidget(settings);
     await widget.presentMedium();
   } else {
     const appleDate = new Date("2001/01/01");
@@ -19,26 +17,6 @@ async function main() {
     callback.open();
     Script.complete();
   }
-}
-
-async function createWidget() {
-  const widget = new ListWidget();
-  widget.backgroundColor = new Color(settings.widgetBackgroundColor, 1);
-  setWidgetBackground(widget, settings.backgroundImage);
-  widget.setPadding(16, 16, 16, 16);
-
-  const today = new Date();
-  // layout horizontally
-  const globalStack = widget.addStack();
-
-  if (settings.showEventsView) {
-    await buildEventsView(today, globalStack, settings);
-  }
-  if (settings.showCalendarView) {
-    await buildCalendarView(today, globalStack, settings);
-  }
-
-  return widget;
 }
 
 main();

@@ -4,7 +4,7 @@ const params = JSON.parse(args.widgetParameter) || { bg: "transparent.jpg" };
 const settings: Settings = {
   // set to true to initially give Scriptable calendar access
   // set to false to open Calendar when script is run - when tapping on the widget
-  debug: false,
+  debug: true,
   // calshow is the ios calendar app
   calendarApp: "calshow",
   // a separate image can be specified per widget in widget params:
@@ -36,9 +36,8 @@ const settings: Settings = {
   textColor: "#ffffff",
   // opacity value for event times
   eventDateTimeOpacity: 0.7,
-  // choose either a split view or show only one of them
-  showEventsView: params.view ? params.view === "events" : true,
-  showCalendarView: params.view ? params.view === "cal" : true,
+  // what the widget shows
+  widgetType: params.view ? params.view : "medium",
   // show or hide all day events
   showAllDayEvents: true,
   // show calendar colored bullet for each event
@@ -74,8 +73,7 @@ export interface Settings {
   weekendDates: string;
   textColor: string;
   eventDateTimeOpacity: number;
-  showEventsView: boolean;
-  showCalendarView: boolean;
+  widgetType: string;
   showAllDayEvents: boolean;
   showCalendarBullet: boolean;
   startWeekOnSunday: boolean;
