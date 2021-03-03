@@ -1,5 +1,5 @@
 {
-  "plugins": ["@typescript-eslint", "import"],
+  "plugins": ["@typescript-eslint","prettier", "import"],
   "extends": [
     "plugin:@typescript-eslint/recommended",
     "prettier",
