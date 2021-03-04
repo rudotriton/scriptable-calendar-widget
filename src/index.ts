@@ -1,5 +1,5 @@
-import buildWidget from "./buildWidget";
 import settings from "./settings";
+import buildWidget from "./buildWidget";
 
 async function main() {
   if (config.runsInWidget) {

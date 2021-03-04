@@ -1,5 +1,5 @@
 // get widget params
-const params = JSON.parse(args.widgetParameter) || { bg: "transparent.jpg" };
+const params = JSON.parse(args.widgetParameter) || {};
 
 const settings: Settings = {
   // set to true to initially give Scriptable calendar access
@@ -11,7 +11,7 @@ const settings: Settings = {
   // Long press on widget -> Edit Widget -> Parameter
   // parameter config would look like this:
   // { "bg": "2111.jpg", "view": "events" }
-  backgroundImage: params.bg,
+  backgroundImage: params.bg ? params.bg : "transparent.jpg",
   widgetBackgroundColor: "#000000",
   todayTextColor: "#000000",
   markToday: true,
@@ -37,7 +37,7 @@ const settings: Settings = {
   // opacity value for event times
   eventDateTimeOpacity: 0.7,
   // what the widget shows
-  widgetType: params.view ? params.view : "medium",
+  widgetType: params.view ? params.view : "cal",
   // show or hide all day events
   showAllDayEvents: true,
   // show calendar colored bullet for each event

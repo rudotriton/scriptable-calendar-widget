@@ -4,7 +4,7 @@ async function getEvents(
   date: Date,
   settings: Settings
 ): Promise<CalendarEvent[]> {
-  let events = [];
+  let events: CalendarEvent[] = [];
   if (settings.showEventsOnlyForToday) {
     events = await CalendarEvent.today([]);
   } else {

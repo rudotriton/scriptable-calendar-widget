@@ -1,3 +1,34 @@
+// src/settings.ts
+var params = JSON.parse(args.widgetParameter) || {};
+var settings = {
+  debug: true,
+  calendarApp: "calshow",
+  backgroundImage: params.bg ? params.bg : "transparent.jpg",
+  widgetBackgroundColor: "#000000",
+  todayTextColor: "#000000",
+  markToday: true,
+  todayCircleColor: "#FFB800",
+  showEventCircles: true,
+  eventCircleColor: "#1E5C7B",
+  weekdayTextColor: "#ffffff",
+  weekendLetters: "#FFB800",
+  weekendLetterOpacity: 1,
+  weekendDates: "#FFB800",
+  locale: "en-US",
+  textColor: "#ffffff",
+  eventDateTimeOpacity: 0.7,
+  widgetType: params.view ? params.view : "cal",
+  showAllDayEvents: true,
+  showCalendarBullet: true,
+  startWeekOnSunday: false,
+  showEventsOnlyForToday: false,
+  nextNumOfDays: 7,
+  showCompleteTitle: false,
+  showPrevMonth: true,
+  showNextMonth: true,
+};
+var settings_default = settings;
+
 // src/setWidgetBackground.ts
 function setWidgetBackground(widget, imageName) {
   const imageUrl = getImageUrl(imageName);
@@ -435,27 +466,44 @@ function formatEvent(
 var formatEvent_default = formatEvent;
 
 // src/buildEventsView.ts
-async function buildEventsView(date, events, stack, settings2) {
+async function buildEventsView(
+  events,
+  stack,
+  settings2,
+  {
+    horizontalAlign = "left",
+    verticalAlign = "center",
+    eventLimit = 3,
+    eventSpacer = 8,
+    showMsg = true,
+  } = {}
+) {
   const leftStack = stack.addStack();
-  stack.addSpacer();
+  if (horizontalAlign === "left") {
+    stack.addSpacer();
+  }
   leftStack.layoutVertically();
-  leftStack.addSpacer();
+  if (verticalAlign === "bottom" || verticalAlign === "center") {
+    leftStack.addSpacer();
+  }
   if (events.length !== 0) {
-    const numEvents = events.length > 3 ? 3 : events.length;
+    const numEvents = events.length > eventLimit ? eventLimit : events.length;
     for (let i = 0; i < numEvents; i += 1) {
       formatEvent_default(leftStack, events[i], settings2);
       if (i < numEvents - 1) {
-        leftStack.addSpacer(8);
+        leftStack.addSpacer(eventSpacer);
       }
     }
-  } else {
+  } else if (showMsg) {
     addWidgetTextLine_default(`No more events.`, leftStack, {
       textColor: settings2.textColor,
       opacity: settings2.eventDateTimeOpacity,
       font: Font.regularSystemFont(15),
     });
   }
-  leftStack.addSpacer();
+  if (verticalAlign === "top" || verticalAlign === "center") {
+    leftStack.addSpacer();
+  }
 }
 var buildEventsView_default = buildEventsView;
 
@@ -486,6 +534,32 @@ async function getEvents(date, settings2) {
 }
 var getEvents_default = getEvents;
 
+// src/buildLargeWidget.ts
+async function buildLargeWidget(date, events, stack, settings2) {
+  const leftSide = stack.addStack();
+  stack.addSpacer();
+  const rightSide = stack.addStack();
+  leftSide.layoutVertically();
+  rightSide.layoutVertically();
+  rightSide.addSpacer();
+  rightSide.centerAlignContent();
+  const leftSideEvents = events.slice(0, 8);
+  const rightSideEvents = events.slice(8, 12);
+  await buildEventsView_default(leftSideEvents, leftSide, settings2, {
+    eventLimit: 8,
+    eventSpacer: 6,
+  });
+  await buildCalendarView_default(date, rightSide, settings2);
+  rightSide.addSpacer();
+  await buildEventsView_default(rightSideEvents, rightSide, settings2, {
+    eventLimit: 4,
+    eventSpacer: 6,
+    verticalAlign: "top",
+    showMsg: false,
+  });
+}
+var buildLargeWidget_default = buildLargeWidget;
+
 // src/buildWidget.ts
 async function buildWidget(settings2) {
   const widget = new ListWidget();
@@ -495,51 +569,25 @@ async function buildWidget(settings2) {
   const today = new Date();
   const globalStack = widget.addStack();
   const events = await getEvents_default(today, settings2);
-  switch (settings2.widgetType) {
-    case "events":
-      await buildEventsView_default(today, events, globalStack, settings2);
+  switch (config.widgetFamily) {
+    case "small":
+      if (settings2.widgetType === "events") {
+        await buildEventsView_default(events, globalStack, settings2);
+      } else {
+        await buildCalendarView_default(today, globalStack, settings2);
+      }
       break;
-    case "cal":
+    case "medium":
+      await buildEventsView_default(events, globalStack, settings2);
       await buildCalendarView_default(today, globalStack, settings2);
       break;
-    default:
-      await buildEventsView_default(today, events, globalStack, settings2);
-      await buildCalendarView_default(today, globalStack, settings2);
+    case "large":
+      await buildLargeWidget_default(today, events, globalStack, settings2);
+      break;
   }
   return widget;
 }
 var buildWidget_default = buildWidget;
-
-// src/settings.ts
-var params = JSON.parse(args.widgetParameter) || { bg: "transparent.jpg" };
-var settings = {
-  debug: true,
-  calendarApp: "calshow",
-  backgroundImage: params.bg,
-  widgetBackgroundColor: "#000000",
-  todayTextColor: "#000000",
-  markToday: true,
-  todayCircleColor: "#FFB800",
-  showEventCircles: true,
-  eventCircleColor: "#1E5C7B",
-  weekdayTextColor: "#ffffff",
-  weekendLetters: "#FFB800",
-  weekendLetterOpacity: 1,
-  weekendDates: "#FFB800",
-  locale: "en-US",
-  textColor: "#ffffff",
-  eventDateTimeOpacity: 0.7,
-  widgetType: params.view ? params.view : "medium",
-  showAllDayEvents: true,
-  showCalendarBullet: true,
-  startWeekOnSunday: false,
-  showEventsOnlyForToday: false,
-  nextNumOfDays: 7,
-  showCompleteTitle: false,
-  showPrevMonth: true,
-  showNextMonth: true,
-};
-var settings_default = settings;
 
 // src/index.ts
 async function main() {
