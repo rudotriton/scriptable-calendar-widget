@@ -1,5 +1,5 @@
 <p align="center" >
-    <img width="500" alt="scriptable calendar" src ="./assets/scriptable-calendar-widget.jpg">
+    <img alt="scriptable calendar" src ="./assets/scriptable-calendar-widget.jpg">
 </p>
 
 - [Setting Up](#setting-up)

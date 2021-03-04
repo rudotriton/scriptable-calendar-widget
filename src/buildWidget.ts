@@ -25,12 +25,12 @@ async function buildWidget(settings: Settings): Promise<ListWidget> {
         await buildCalendarView(today, globalStack, settings);
       }
       break;
-    case "medium":
-      await buildEventsView(events, globalStack, settings);
-      await buildCalendarView(today, globalStack, settings);
-      break;
     case "large":
       await buildLargeWidget(today, events, globalStack, settings);
+      break;
+    default:
+      await buildEventsView(events, globalStack, settings);
+      await buildCalendarView(today, globalStack, settings);
       break;
   }
 

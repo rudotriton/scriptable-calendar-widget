@@ -4,7 +4,7 @@ const params = JSON.parse(args.widgetParameter) || {};
 const settings: Settings = {
   // set to true to initially give Scriptable calendar access
   // set to false to open Calendar when script is run - when tapping on the widget
-  debug: true,
+  debug: false,
   // calshow is the ios calendar app
   calendarApp: "calshow",
   // a separate image can be specified per widget in widget params:

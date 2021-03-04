@@ -1,7 +1,7 @@
 // src/settings.ts
 var params = JSON.parse(args.widgetParameter) || {};
 var settings = {
-  debug: true,
+  debug: false,
   calendarApp: "calshow",
   backgroundImage: params.bg ? params.bg : "transparent.jpg",
   widgetBackgroundColor: "#000000",
@@ -577,12 +577,12 @@ async function buildWidget(settings2) {
         await buildCalendarView_default(today, globalStack, settings2);
       }
       break;
-    case "medium":
-      await buildEventsView_default(events, globalStack, settings2);
-      await buildCalendarView_default(today, globalStack, settings2);
-      break;
     case "large":
       await buildLargeWidget_default(today, events, globalStack, settings2);
+      break;
+    default:
+      await buildEventsView_default(events, globalStack, settings2);
+      await buildCalendarView_default(today, globalStack, settings2);
       break;
   }
   return widget;
