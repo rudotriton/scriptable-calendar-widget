@@ -1,14 +1,12 @@
-# Scriptable Calendar Widget
-
 <p align="center" >
-    <img width="500" alt="scriptable calendar" src ="./assets/widget.png">
+    <img width="500" alt="scriptable calendar" src ="./assets/scriptable-calendar-widget.jpg">
 </p>
 
-- [Scriptable Calendar Widget](#scriptable-calendar-widget)
-  - [Setting Up](#setting-up)
-  - [Settings](#settings)
-  - [Small widgets](#small-widgets)
-  - [Development](#development)
+- [Setting Up](#setting-up)
+- [Customization](#customization)
+- [Small Widgets](#small-widgets)
+- [Large Widgets](#large-widgets)
+- [Development](#development)
 
 ## Setting Up
 
@@ -21,7 +19,7 @@
 - Set the `Script` to be the script you just created and `When Interacting` to `Run Script` which will then launch Calendar app when you tap on the widget.
 - Return to your home screen which should now hopefully show the Scriptable calendar widget.
 
-## Settings
+## Customization
 
 - `debug` - set to `true` to show the widget in Scriptable, `false` to open a
   calendar app.
@@ -40,8 +38,7 @@
 - `locale` - a Unicode locale identifier string, this would change the weekday letters to the specified language.
 - `textColor` - color of all the other text
 - `eventDateTimeOpacity` - opacity value for event times
-- `showEventsView` - to show the events view or not, this would be set through widget parameters in order to set it per widget basis. (check: [Small widgets](#small-widgets))
-- `showCalendarView` - to show the calendar view or not, also set through widget parameters.
+- `widgetType` - for small widgets it determines which side to show. This would be set through widget parameters in order to set it per widget basis, rather than setting here and having all small widgets be the same type. (check: [Small widgets](#small-widgets))
 - `showAllDayEvents` - would either show or hide all day events.
 - `showCalendarBullet` - would show a `●` in front of the event name which matches the calendar color from which the event originates.
 - `startWeekOnSunday` - would start the week either on a Sunday or a Monday.
@@ -51,18 +48,18 @@
 - `showPrevMonth` - would show days from the previous month if they fit into the calendar view.
 - `showNextMonth` - would show days from the next month if they fit into the calendar view.
 
-## Small widgets
+## Small Widgets
 
-<p align="center" >
-    <img width="350" alt="scriptable calendar" src ="./assets/small-widgets.png">
-</p>
-
-The script also supports small widgets or a medium widget with just one part. In this case the widget parameter (long press on the widget -> edit widget -> parameter) should be set to something like:
+The script also supports small widgets in which case the widget parameter (long press on the widget -> edit widget -> parameter) should be set to something like:
 
 - `{ "bg": "top-left.jpg", "view": "events" }`
 - `{ "bg": "top-right.jpg", "view": "cal" }`
 
 Where `"events"` specifies the events view and `"cal"` the calendar view. (Setting the background is not necessary).
+
+## Large Widgets
+
+The script should detect on its own that it is running in a large widget and will adjust accordingly.
 
 ## Development
 
