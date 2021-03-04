@@ -1,9 +1,9 @@
 // src/settings.ts
-var params = JSON.parse(args.widgetParameter) || { bg: "transparent.jpg" };
+var params = JSON.parse(args.widgetParameter) || {};
 var settings = {
   debug: false,
   calendarApp: "calshow",
-  backgroundImage: params.bg,
+  backgroundImage: params.bg ? params.bg : "transparent.jpg",
   widgetBackgroundColor: "#000000",
   todayTextColor: "#000000",
   markToday: true,
@@ -17,8 +17,7 @@ var settings = {
   locale: "en-US",
   textColor: "#ffffff",
   eventDateTimeOpacity: 0.7,
-  showEventsView: params.view ? params.view === "events" : true,
-  showCalendarView: params.view ? params.view === "cal" : true,
+  widgetType: params.view ? params.view : "cal",
   showAllDayEvents: true,
   showCalendarBullet: true,
   startWeekOnSunday: false,
@@ -430,7 +429,7 @@ var getSuffix_default = getSuffix;
 function formatEvent(
   stack,
   event,
-  { opacity, textColor, showCalendarBullet, showCompleteTitle }
+  { eventDateTimeOpacity, textColor, showCalendarBullet, showCompleteTitle }
 ) {
   const eventLine = stack.addStack();
   if (showCalendarBullet) {
@@ -460,18 +459,56 @@ function formatEvent(
   }
   addWidgetTextLine_default(time, stack, {
     textColor,
-    opacity,
+    opacity: eventDateTimeOpacity,
     font: Font.regularSystemFont(14),
   });
 }
 var formatEvent_default = formatEvent;
 
 // src/buildEventsView.ts
-async function buildEventsView(date, stack, settings2) {
+async function buildEventsView(
+  events,
+  stack,
+  settings2,
+  {
+    horizontalAlign = "left",
+    verticalAlign = "center",
+    eventLimit = 3,
+    eventSpacer = 8,
+    showMsg = true,
+  } = {}
+) {
   const leftStack = stack.addStack();
-  stack.addSpacer();
+  if (horizontalAlign === "left") {
+    stack.addSpacer();
+  }
   leftStack.layoutVertically();
-  leftStack.addSpacer();
+  if (verticalAlign === "bottom" || verticalAlign === "center") {
+    leftStack.addSpacer();
+  }
+  if (events.length !== 0) {
+    const numEvents = events.length > eventLimit ? eventLimit : events.length;
+    for (let i = 0; i < numEvents; i += 1) {
+      formatEvent_default(leftStack, events[i], settings2);
+      if (i < numEvents - 1) {
+        leftStack.addSpacer(eventSpacer);
+      }
+    }
+  } else if (showMsg) {
+    addWidgetTextLine_default(`No more events.`, leftStack, {
+      textColor: settings2.textColor,
+      opacity: settings2.eventDateTimeOpacity,
+      font: Font.regularSystemFont(15),
+    });
+  }
+  if (verticalAlign === "top" || verticalAlign === "center") {
+    leftStack.addSpacer();
+  }
+}
+var buildEventsView_default = buildEventsView;
+
+// src/getEvents.ts
+async function getEvents(date, settings2) {
   let events = [];
   if (settings2.showEventsOnlyForToday) {
     events = await CalendarEvent.today([]);
@@ -493,34 +530,74 @@ async function buildEventsView(date, stack, settings2) {
       futureEvents.push(event);
     }
   }
-  if (futureEvents.length !== 0) {
-    const numEvents = futureEvents.length > 3 ? 3 : futureEvents.length;
-    for (let i = 0; i < numEvents; i += 1) {
-      formatEvent_default(leftStack, futureEvents[i], settings2);
-      if (i < numEvents - 1) {
-        leftStack.addSpacer(8);
-      }
-    }
-  } else {
-    addWidgetTextLine_default(`No more events.`, leftStack, {
-      textColor: settings2.textColor,
-      opacity: settings2.eventDateTimeOpacity,
-      font: Font.regularSystemFont(15),
-    });
-  }
-  leftStack.addSpacer();
+  return futureEvents;
 }
-var buildEventsView_default = buildEventsView;
+var getEvents_default = getEvents;
+
+// src/buildLargeWidget.ts
+async function buildLargeWidget(date, events, stack, settings2) {
+  const leftSide = stack.addStack();
+  stack.addSpacer();
+  const rightSide = stack.addStack();
+  leftSide.layoutVertically();
+  rightSide.layoutVertically();
+  rightSide.addSpacer();
+  rightSide.centerAlignContent();
+  const leftSideEvents = events.slice(0, 8);
+  const rightSideEvents = events.slice(8, 12);
+  await buildEventsView_default(leftSideEvents, leftSide, settings2, {
+    eventLimit: 8,
+    eventSpacer: 6,
+  });
+  await buildCalendarView_default(date, rightSide, settings2);
+  rightSide.addSpacer();
+  await buildEventsView_default(rightSideEvents, rightSide, settings2, {
+    eventLimit: 4,
+    eventSpacer: 6,
+    verticalAlign: "top",
+    showMsg: false,
+  });
+}
+var buildLargeWidget_default = buildLargeWidget;
+
+// src/buildWidget.ts
+async function buildWidget(settings2) {
+  const widget = new ListWidget();
+  widget.backgroundColor = new Color(settings2.widgetBackgroundColor, 1);
+  setWidgetBackground_default(widget, settings2.backgroundImage);
+  widget.setPadding(16, 16, 16, 16);
+  const today = new Date();
+  const globalStack = widget.addStack();
+  const events = await getEvents_default(today, settings2);
+  switch (config.widgetFamily) {
+    case "small":
+      if (settings2.widgetType === "events") {
+        await buildEventsView_default(events, globalStack, settings2);
+      } else {
+        await buildCalendarView_default(today, globalStack, settings2);
+      }
+      break;
+    case "large":
+      await buildLargeWidget_default(today, events, globalStack, settings2);
+      break;
+    default:
+      await buildEventsView_default(events, globalStack, settings2);
+      await buildCalendarView_default(today, globalStack, settings2);
+      break;
+  }
+  return widget;
+}
+var buildWidget_default = buildWidget;
 
 // src/index.ts
 async function main() {
   if (config.runsInWidget) {
-    const widget = await createWidget();
+    const widget = await buildWidget_default(settings_default);
     Script.setWidget(widget);
     Script.complete();
   } else if (settings_default.debug) {
     Script.complete();
-    const widget = await createWidget();
+    const widget = await buildWidget_default(settings_default);
     await widget.presentMedium();
   } else {
     const appleDate = new Date("2001/01/01");
@@ -531,21 +608,6 @@ async function main() {
     callback.open();
     Script.complete();
   }
-}
-async function createWidget() {
-  const widget = new ListWidget();
-  widget.backgroundColor = new Color(settings_default.widgetBackgroundColor, 1);
-  setWidgetBackground_default(widget, settings_default.backgroundImage);
-  widget.setPadding(16, 16, 16, 16);
-  const today = new Date();
-  const globalStack = widget.addStack();
-  if (settings_default.showEventsView) {
-    await buildEventsView_default(today, globalStack, settings_default);
-  }
-  if (settings_default.showCalendarView) {
-    await buildCalendarView_default(today, globalStack, settings_default);
-  }
-  return widget;
 }
 
 await main();
