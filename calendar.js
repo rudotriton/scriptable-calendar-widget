@@ -1,7 +1,7 @@
 // src/settings.ts
 var params = JSON.parse(args.widgetParameter) || {};
 var settings = {
-  debug: false,
+  debug: true,
   calendarApp: "calshow",
   backgroundImage: params.bg ? params.bg : "transparent.jpg",
   widgetBackgroundColor: "#000000",
@@ -520,12 +520,16 @@ async function getEvents(date, settings2) {
   const futureEvents = [];
   for (const event of events) {
     if (
-      (settings2.showAllDayEvents &&
-        event.isAllDay &&
-        event.startDate.getTime() >
-          new Date(new Date().setDate(new Date().getDate() - 1)).getTime()) ||
-      (event.endDate.getTime() > date.getTime() &&
-        !event.title.startsWith("Canceled:"))
+      event.isAllDay &&
+      settings2.showAllDayEvents &&
+      event.startDate.getTime() >
+        new Date(new Date().setDate(new Date().getDate() - 1)).getTime()
+    ) {
+      futureEvents.push(event);
+    } else if (
+      !event.isAllDay &&
+      event.endDate.getTime() > date.getTime() &&
+      !event.title.startsWith("Canceled:")
     ) {
       futureEvents.push(event);
     }
