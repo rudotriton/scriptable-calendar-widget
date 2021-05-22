@@ -48,13 +48,13 @@ function extendBoundaries(
   const startDate = new Date(
     first.getFullYear(),
     first.getMonth(),
-    first.getDay() - extendToPrev
+    first.getDate() - extendToPrev
   );
 
   const endDate = new Date(
     first.getFullYear(),
     first.getMonth() + 1,
-    first.getDay() + extendToNext
+    first.getDate() + extendToNext
   );
   return { startDate, endDate };
 }
