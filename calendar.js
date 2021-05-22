@@ -20,7 +20,7 @@ var settings = {
   widgetType: params.view ? params.view : "cal",
   showAllDayEvents: true,
   showCalendarBullet: true,
-  startWeekOnSunday: false,
+  startWeekOnSunday: true,
   showEventsOnlyForToday: false,
   nextNumOfDays: 7,
   showCompleteTitle: false,
@@ -221,12 +221,12 @@ function extendBoundaries(first, extendToPrev, extendToNext) {
   const startDate = new Date(
     first.getFullYear(),
     first.getMonth(),
-    first.getDay() - extendToPrev
+    first.getDate() - extendToPrev
   );
   const endDate = new Date(
     first.getFullYear(),
     first.getMonth() + 1,
-    first.getDay() + extendToNext
+    first.getDate() + extendToNext
   );
   return { startDate, endDate };
 }
@@ -341,6 +341,8 @@ async function buildCalendarView(date, stack, settings2) {
     daysFromPrevMonth,
     daysFromNextMonth
   );
+  console.log("events");
+  console.log(eventCounts);
   for (let i = 0; i < calendar.length; i += 1) {
     const weekdayStack = calendarStack.addStack();
     weekdayStack.layoutVertically();
