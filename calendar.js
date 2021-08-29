@@ -1,7 +1,7 @@
 // src/settings.ts
 var params = JSON.parse(args.widgetParameter) || {};
 var settings = {
-  debug: true,
+  debug: false,
   calendarApp: "calshow",
   backgroundImage: params.bg ? params.bg : "transparent.jpg",
   widgetBackgroundColor: "#000000",
@@ -20,7 +20,7 @@ var settings = {
   widgetType: params.view ? params.view : "cal",
   showAllDayEvents: true,
   showCalendarBullet: true,
-  startWeekOnSunday: true,
+  startWeekOnSunday: false,
   showEventsOnlyForToday: false,
   nextNumOfDays: 7,
   showCompleteTitle: false,
@@ -341,8 +341,6 @@ async function buildCalendarView(date, stack, settings2) {
     daysFromPrevMonth,
     daysFromNextMonth
   );
-  console.log("events");
-  console.log(eventCounts);
   for (let i = 0; i < calendar.length; i += 1) {
     const weekdayStack = calendarStack.addStack();
     weekdayStack.layoutVertically();
