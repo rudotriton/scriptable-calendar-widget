@@ -5,8 +5,9 @@ const settings: Settings = {
   // set to true to initially give Scriptable calendar access
   // set to false to open Calendar when script is run - when tapping on the widget
   debug: false,
-  // what app to open when the script is run in a widget, calshow is the ios
-  // calendar app
+  // what app to open when the script is run in a widget,
+  //   "calshow" is the ios calendar app
+  //   "x-fantastical3" for fantastical
   calendarApp: "calshow",
   // a separate image can be specified per widget in widget params:
   // Long press on widget -> Edit Widget -> Parameter
@@ -55,6 +56,8 @@ const settings: Settings = {
   showPrevMonth: true,
   // shows the last days of the previous month if they fit
   showNextMonth: true,
+  // tapping on a date opens that specific one
+  individualDateTargets: false,
 };
 
 export interface Settings {
@@ -83,6 +86,7 @@ export interface Settings {
   showCompleteTitle: boolean;
   showPrevMonth: boolean;
   showNextMonth: boolean;
+  individualDateTargets: boolean;
 }
 
 export default settings;

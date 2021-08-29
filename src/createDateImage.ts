@@ -1,7 +1,6 @@
 /**
- * Creates the image for a date, which if set, also draws the circular
- * background indicating events, for bounding months there are drawn
- * smaller
+ * Creates the image for a date, if set, also draws the circular background
+ * indicating events, for bounding months these are drawn smaller
  */
 function createDateImage(
   text: string,

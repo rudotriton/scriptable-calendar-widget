@@ -12,10 +12,11 @@ export interface CalendarInfo {
 /**
  * Creates an array of arrays, where the inner arrays include the same weekdays
  * along with a weekday identifier in the 0th position
+ * days are in the format of MM/DD, months are 0 indexed
  * [
- *   [ 'M', ' ', '7', '14', '21', '28' ],
- *   [ 'T', '1', '8', '15', '22', '29' ],
- *   [ 'W', '2', '9', '16', '23', '30' ],
+ *   [ 'M', ' ',   '8/7', '8/14', '8/21', '8/28' ],
+ *   [ 'T', '8/1', '8/8', '8/15', '8/22', '8/29' ],
+ *   [ 'W', '8/2', '8/9', '8/16', '8/23', '8/30' ],
  *   ...
  * ]
  *
@@ -53,7 +54,7 @@ function buildCalendar(
   // increment from 0 to 6 until the month has been built
   let dayStackCounter = 0;
 
-  // fill with empty slots up to the firstDay
+  // fill with empty slots or days from the prev month, up to the firstDay
   for (; index < firstDay; index += 1) {
     if (showPrevMonth) {
       calendar[index - offset].push(
