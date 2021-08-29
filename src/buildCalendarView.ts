@@ -78,7 +78,7 @@ async function buildCalendarView(
             align: "center",
           });
         }
-        // j == 0, contains the letters, so this creates every other date
+        // j == 0, contains the letters, so this creates all the other dates
       } else if (j > 0 && calendar[i][j] !== " ") {
         const toFullSize = isDateFromBoundingMonth(i, j, date, calendar);
 

@@ -2,8 +2,10 @@
  * If the week starts on a Sunday indeces 0 and 6 are for weekends
  * else indices 5 and 6
  *
+ * @name isWeekend
+ * @function
  * @param {number} index
- * @param {{startWeekOnSunday: boolean}} settings
+ * @param {boolean} settings
  */
 function isWeekend(index: number, startWeekOnSunday = false): boolean {
   if (startWeekOnSunday) {
