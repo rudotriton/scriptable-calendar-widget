@@ -362,11 +362,8 @@ async function buildCalendarView(date, stack, settings2) {
   );
   const calendarStack = rightStack.addStack();
   calendarStack.spacing = 2;
-  const {
-    calendar,
-    daysFromPrevMonth,
-    daysFromNextMonth,
-  } = buildCalendar_default(date, settings2);
+  const { calendar, daysFromPrevMonth, daysFromNextMonth } =
+    buildCalendar_default(date, settings2);
   const { eventCounts, intensity } = await countEvents_default(
     date,
     daysFromPrevMonth,
