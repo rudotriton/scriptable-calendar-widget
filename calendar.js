@@ -26,6 +26,7 @@ var settings = {
   showCompleteTitle: false,
   showPrevMonth: true,
   showNextMonth: true,
+  individualDateTargets: false,
 };
 var settings_default = settings;
 
@@ -311,6 +312,36 @@ function isWeekend(index, startWeekOnSunday = false) {
 }
 var isWeekend_default = isWeekend;
 
+// src/createUrl.ts
+function createUrl(day, month, date, settings2) {
+  let url;
+  let year;
+  const currentMonth = date.getMonth();
+  if (currentMonth === 11 && Number(month) === 1) {
+    year = date.getFullYear() + 1;
+  } else if (currentMonth === 0 && Number(month) === 11) {
+    year = date.getFullYear() - 1;
+  } else {
+    year = date.getFullYear();
+  }
+  if (settings2.calendarApp === "calshow") {
+    const appleDate = new Date("2001/01/01");
+    const timestamp =
+      (new Date(`${year}/${Number(month) + 1}/${day}`).getTime() -
+        appleDate.getTime()) /
+      1e3;
+    url = `calshow:${timestamp}`;
+  } else if (settings2.calendarApp === "x-fantastical3") {
+    url = `${settings2.calendarApp}://show/calendar/${year}-${
+      Number(month) + 1
+    }-${day}`;
+  } else {
+    url = "";
+  }
+  return url;
+}
+var createUrl_default = createUrl;
+
 // src/buildCalendarView.ts
 async function buildCalendarView(date, stack, settings2) {
   const rightStack = stack.addStack();
@@ -348,7 +379,11 @@ async function buildCalendarView(date, stack, settings2) {
       const dayStack = weekdayStack.addStack();
       dayStack.size = new Size(spacing, spacing);
       dayStack.centerAlignContent();
-      const day = calendar[i][j].split("/").reverse()[0];
+      const [day, month] = calendar[i][j].split("/").reverse();
+      if (settings2.individualDateTargets) {
+        const callbackUrl = createUrl_default(day, month, date, settings2);
+        if (j > 0) dayStack.url = callbackUrl;
+      }
       if (calendar[i][j] === `${date.getMonth()}/${date.getDate()}`) {
         if (settings2.markToday) {
           const highlightedDate = createDateImage_default(day, {

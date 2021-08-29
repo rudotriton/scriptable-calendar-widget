@@ -4,6 +4,7 @@ import countEvents from "./countEvents";
 import createDateImage from "./createDateImage";
 import isDateFromBoundingMonth from "./isDateFromBoundingMonth";
 import isWeekend from "./isWeekend";
+import createUrl from "./createUrl";
 import { Settings } from "./settings";
 
 /**
@@ -60,7 +61,12 @@ async function buildCalendarView(
 
       // splitting "month/day" or "D"
       // a day marker won't split so if we reverse and take first we get correct
-      const day = calendar[i][j].split("/").reverse()[0];
+      const [day, month] = calendar[i][j].split("/").reverse();
+      // add callbacks to each date
+      if (settings.individualDateTargets) {
+        const callbackUrl = createUrl(day, month, date, settings);
+        if (j > 0) dayStack.url = callbackUrl;
+      }
       // if the day is today, highlight it
       if (calendar[i][j] === `${date.getMonth()}/${date.getDate()}`) {
         if (settings.markToday) {
