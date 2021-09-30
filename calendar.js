@@ -457,6 +457,24 @@ function getSuffix(date) {
 }
 var getSuffix_default = getSuffix;
 
+// src/getEventIcon.ts
+function getEventIcon(event) {
+  if (event.attendees === null) {
+    return "\u25CF ";
+  }
+  const status = event.attendees.filter((attendee) => attendee.isCurrentUser)[0]
+    .status;
+  switch (status) {
+    case "accepted":
+      return "\u2713 ";
+    case "tentative":
+      return "~ ";
+    case "declined":
+      return "\u2718 ";
+  }
+}
+var getEventIcon_default = getEventIcon;
+
 // src/formatEvent.ts
 function formatEvent(
   stack,
@@ -465,7 +483,8 @@ function formatEvent(
 ) {
   const eventLine = stack.addStack();
   if (showCalendarBullet) {
-    addWidgetTextLine_default("\u25CF ", eventLine, {
+    const icon = getEventIcon_default(event);
+    addWidgetTextLine_default(icon, eventLine, {
       textColor: event.calendar.color.hex,
       font: Font.mediumSystemFont(14),
       lineLimit: showCompleteTitle ? 0 : 1,
