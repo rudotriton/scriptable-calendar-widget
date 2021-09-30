@@ -1,6 +1,7 @@
 import addWidgetTextLine from "./addWidgetTextLine";
 import formatTime from "./formatTime";
 import getSuffix from "./getSuffix";
+import getEventIcon from "getEventIcon";
 import { Settings } from "./settings";
 
 /**
@@ -21,7 +22,8 @@ function formatEvent(
 
   if (showCalendarBullet) {
     // show calendar bullet in front of event name
-    addWidgetTextLine("● ", eventLine, {
+    const icon = getEventIcon(event);
+    addWidgetTextLine(icon , eventLine, {
       textColor: event.calendar.color.hex,
       font: Font.mediumSystemFont(14),
       lineLimit: showCompleteTitle ? 0 : 1,
