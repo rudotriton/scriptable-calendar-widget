@@ -471,6 +471,8 @@ function getEventIcon(event) {
       return "~ ";
     case "declined":
       return "\u2718 ";
+    default:
+      return "\u25CF ";
   }
 }
 var getEventIcon_default = getEventIcon;

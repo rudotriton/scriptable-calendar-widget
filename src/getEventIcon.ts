@@ -1,4 +1,4 @@
-function getEventIcon(event: Event): string {
+function getEventIcon(event: CalendarEvent): string {
   if (event.attendees === null) {
     return "● ";
   }
@@ -11,6 +11,8 @@ function getEventIcon(event: Event): string {
       return "~ ";
     case "declined":
       return "✘ ";
+    default:
+      return "● ";
   }
 }
 
