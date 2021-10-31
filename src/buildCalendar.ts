@@ -32,6 +32,10 @@ function buildCalendar(
 ): CalendarInfo {
   const currentMonth = getMonthBoundaries(date);
 
+  // NOTE: 31 Oct when the clocks change there is now a +2 diff instead of +3,
+  // so a prev month won't be september, but oct, as 2 doesn't push it over,
+  // the built month would have the days from prev month be from Oct instead of
+  // Sept. a highlight lights 31 twice as they're both "09/30"
   const prevMonth = getMonthBoundaries(getMonthOffset(date, -1));
   const calendar = getWeekLetters(locale, startWeekOnSunday);
   let daysFromPrevMonth = 0;
