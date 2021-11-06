@@ -27,6 +27,7 @@ var settings = {
   showPrevMonth: true,
   showNextMonth: true,
   individualDateTargets: false,
+  flipped: false,
 };
 var settings_default = settings;
 
@@ -638,8 +639,14 @@ async function buildWidget(settings2) {
       await buildLargeWidget_default(today, events, globalStack, settings2);
       break;
     default:
-      await buildEventsView_default(events, globalStack, settings2);
-      await buildCalendarView_default(today, globalStack, settings2);
+      if (settings2.flipped) {
+        await buildCalendarView_default(today, globalStack, settings2);
+        globalStack.addSpacer(10);
+        await buildEventsView_default(events, globalStack, settings2);
+      } else {
+        await buildEventsView_default(events, globalStack, settings2);
+        await buildCalendarView_default(today, globalStack, settings2);
+      }
       break;
   }
   return widget;

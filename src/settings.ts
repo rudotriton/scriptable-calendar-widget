@@ -58,6 +58,8 @@ const settings: Settings = {
   showNextMonth: true,
   // tapping on a date opens that specific one
   individualDateTargets: false,
+  // events-calendar OR a flipped calendar-events type of view for medium widget
+  flipped: false,
 };
 
 export interface Settings {
@@ -87,6 +89,7 @@ export interface Settings {
   showPrevMonth: boolean;
   showNextMonth: boolean;
   individualDateTargets: boolean;
+  flipped: boolean;
 }
 
 export default settings;

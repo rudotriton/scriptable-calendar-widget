@@ -29,8 +29,14 @@ async function buildWidget(settings: Settings): Promise<ListWidget> {
       await buildLargeWidget(today, events, globalStack, settings);
       break;
     default:
-      await buildEventsView(events, globalStack, settings);
-      await buildCalendarView(today, globalStack, settings);
+      if (settings.flipped) {
+        await buildCalendarView(today, globalStack, settings);
+        globalStack.addSpacer(10);
+        await buildEventsView(events, globalStack, settings);
+      } else {
+        await buildEventsView(events, globalStack, settings);
+        await buildCalendarView(today, globalStack, settings);
+      }
       break;
   }
 
