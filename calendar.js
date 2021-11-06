@@ -1,7 +1,7 @@
 // src/settings.ts
 var params = JSON.parse(args.widgetParameter) || {};
 var settings = {
-  debug: true,
+  debug: false,
   calendarApp: "calshow",
   backgroundImage: params.bg ? params.bg : "transparent.jpg",
   widgetBackgroundColor: "#000000",
