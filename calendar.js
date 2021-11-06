@@ -572,7 +572,6 @@ async function getEvents(date, settings2) {
     events = await CalendarEvent.between(date, dateLimit);
   }
   const futureEvents = [];
-  events = events.filter((event) => event.calendar.title === "Work");
   for (const event of events) {
     if (
       event.isAllDay &&
