@@ -1,7 +1,7 @@
 // src/settings.ts
 var params = JSON.parse(args.widgetParameter) || {};
 var settings = {
-  debug: false,
+  debug: true,
   calendarApp: "calshow",
   backgroundImage: params.bg ? params.bg : "transparent.jpg",
   widgetBackgroundColor: "#000000",
@@ -27,6 +27,7 @@ var settings = {
   showPrevMonth: true,
   showNextMonth: true,
   individualDateTargets: false,
+  flipped: false,
 };
 var settings_default = settings;
 
@@ -571,6 +572,7 @@ async function getEvents(date, settings2) {
     events = await CalendarEvent.between(date, dateLimit);
   }
   const futureEvents = [];
+  events = events.filter((event) => event.calendar.title === "Work");
   for (const event of events) {
     if (
       event.isAllDay &&
@@ -638,8 +640,14 @@ async function buildWidget(settings2) {
       await buildLargeWidget_default(today, events, globalStack, settings2);
       break;
     default:
-      await buildEventsView_default(events, globalStack, settings2);
-      await buildCalendarView_default(today, globalStack, settings2);
+      if (settings2.flipped) {
+        await buildCalendarView_default(today, globalStack, settings2);
+        globalStack.addSpacer(10);
+        await buildEventsView_default(events, globalStack, settings2);
+      } else {
+        await buildEventsView_default(events, globalStack, settings2);
+        await buildCalendarView_default(today, globalStack, settings2);
+      }
       break;
   }
   return widget;

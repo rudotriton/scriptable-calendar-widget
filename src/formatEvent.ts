@@ -23,7 +23,7 @@ function formatEvent(
   if (showCalendarBullet) {
     // show calendar bullet in front of event name
     const icon = getEventIcon(event);
-    addWidgetTextLine(icon , eventLine, {
+    addWidgetTextLine(icon, eventLine, {
       textColor: event.calendar.color.hex,
       font: Font.mediumSystemFont(14),
       lineLimit: showCompleteTitle ? 0 : 1,
