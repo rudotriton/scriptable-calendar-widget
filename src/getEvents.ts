@@ -13,6 +13,12 @@ async function getEvents(
     events = await CalendarEvent.between(date, dateLimit);
   }
 
+  if (settings.calFilter.length) {
+    events = events.filter((event) =>
+      settings.calFilter.includes(event.calendar.title)
+    );
+  }
+
   const futureEvents: CalendarEvent[] = [];
 
   // if we show events for the whole week, then we need to filter allDay events

@@ -25,11 +25,13 @@
   calendar app.
 - `calendarApp` - Tapping on the widget launches a calendar app (as long as `debug: false`), by default it launches the iOS Calendar app, however it can be changed to anything as long as the app supports callback URLs. Changing the `calshow` to something else would open other apps. E.g. for Google Calendar it is `googlecalendar`, for Fantastical it is `x-fantastical3`.
 - `backgroundImage` - Image path to use as the widget background, which is taken either from the widget parameters, from the `params` variable at the top, or just replace `params.bg` with the image path. To get an image that can then be used to have a "transparent" widget background use [this](https://gist.github.com/mzeryck/3a97ccd1e059b3afa3c6666d27a496c9#gistcomment-3468585) script and save it to the _Scriptable_ folder on iCloud. Then set either the widget parameter (long press on the widget -> edit widget -> parameter) to `{ "bg": "my-image.jpg"}` where `my-image` is the name of your transparent background **OR** change the line which has `{ bg: "1121.jpg" }` to include your image name.
+- `calFilter` - Optionally an array of calendars to show, shows all calendars if empty. Can be supplied as a widget parameter to only affect that particular widget.
 - `widgetBackgroundColor` - In case of no background image, what color to use.
 - `todayTextColor` - color of today's date
 - `markToday` - show a circle around today or not
 - `todayCircleColor` - if we mark days, then in what color
 - `showEventCircles` - adds colored background for all days that have an event. The color intensity is based roughly on how many events take place that day.
+- `discountAllDayEvents` - if true, all-day events don't count towards eventCircle intensity value
 - `eventCircleColor` - if showing event circles, then in what color
 - `weekdayTextColor` - color of weekdays
 - `weekendLetters` - color of the letters in the top row
@@ -48,6 +50,7 @@
 - `showPrevMonth` - would show days from the previous month if they fit into the calendar view.
 - `showNextMonth` - would show days from the next month if they fit into the calendar view.
 - `individualDateTargets` - would allow tapping on a date to open that specific day in the calendar set by the `calendarApp` setting. (atm, supports default iOS calendar and Fantastical callback urls, should be possible to add more).
+- `flipped` - the layout for the medium-sized widget can be either the default, `events - calendar`, or a flipped, `calendar - events` layout. This setting can also be given as a widget parameter (something like: `{ "flipped": true }`) to just affect that particular widget.
 
 ## Small Widgets
 

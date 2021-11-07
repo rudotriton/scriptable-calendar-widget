@@ -4,11 +4,13 @@ var settings = {
   debug: false,
   calendarApp: "calshow",
   backgroundImage: params.bg ? params.bg : "transparent.jpg",
+  calFilter: params.calFilter ? params.calFilter : [],
   widgetBackgroundColor: "#000000",
   todayTextColor: "#000000",
   markToday: true,
   todayCircleColor: "#FFB800",
   showEventCircles: true,
+  discountAllDayEvents: false,
   eventCircleColor: "#1E5C7B",
   weekdayTextColor: "#ffffff",
   weekendLetters: "#FFB800",
@@ -27,7 +29,7 @@ var settings = {
   showPrevMonth: true,
   showNextMonth: true,
   individualDateTargets: false,
-  flipped: false,
+  flipped: params.flipped ? params.flipped : false,
 };
 var settings_default = settings;
 
@@ -196,14 +198,20 @@ function buildCalendar(
 var buildCalendar_default = buildCalendar;
 
 // src/countEvents.ts
-async function countEvents(date, extendToPrev = 0, extendToNext = 0) {
+async function countEvents(
+  date,
+  extendToPrev = 0,
+  extendToNext = 0,
+  settings2
+) {
   const { firstOfMonth } = getMonthBoundaries_default(date);
   const { startDate, endDate } = extendBoundaries(
     firstOfMonth,
     extendToPrev,
     extendToNext
   );
-  const events = await CalendarEvent.between(startDate, endDate);
+  let events = await CalendarEvent.between(startDate, endDate);
+  events = trimEvents(events, settings2);
   const eventCounts = new Map();
   events.forEach((event) => {
     if (event.isAllDay) {
@@ -218,6 +226,18 @@ async function countEvents(date, extendToPrev = 0, extendToNext = 0) {
   });
   const intensity = calculateIntensity(eventCounts);
   return { eventCounts, intensity };
+}
+function trimEvents(events, settings2) {
+  let trimmedEvents = events;
+  if (settings2.calFilter.length) {
+    trimmedEvents = events.filter((event) =>
+      settings2.calFilter.includes(event.calendar.title)
+    );
+  }
+  if (settings2.discountAllDayEvents || !settings2.showAllDayEvents) {
+    trimmedEvents = trimmedEvents.filter((event) => !event.isAllDay);
+  }
+  return trimmedEvents;
 }
 function extendBoundaries(first, extendToPrev, extendToNext) {
   const startDate = new Date(
@@ -368,7 +388,8 @@ async function buildCalendarView(date, stack, settings2) {
   const { eventCounts, intensity } = await countEvents_default(
     date,
     daysFromPrevMonth,
-    daysFromNextMonth
+    daysFromNextMonth,
+    settings2
   );
   for (let i = 0; i < calendar.length; i += 1) {
     const weekdayStack = calendarStack.addStack();
@@ -570,6 +591,11 @@ async function getEvents(date, settings2) {
     const dateLimit = new Date();
     dateLimit.setDate(dateLimit.getDate() + settings2.nextNumOfDays);
     events = await CalendarEvent.between(date, dateLimit);
+  }
+  if (settings2.calFilter.length) {
+    events = events.filter((event) =>
+      settings2.calFilter.includes(event.calendar.title)
+    );
   }
   const futureEvents = [];
   for (const event of events) {

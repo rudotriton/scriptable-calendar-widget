@@ -3,6 +3,6 @@
     "target": "es2017",
     "module": "commonjs", // ts-node breaks if this is something else
     "baseUrl": "src",
-    "lib": ["ES6"]
+    "lib": ["es2017"]
   }
 }

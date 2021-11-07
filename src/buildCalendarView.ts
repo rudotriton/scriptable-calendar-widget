@@ -47,7 +47,8 @@ async function buildCalendarView(
   const { eventCounts, intensity } = await countEvents(
     date,
     daysFromPrevMonth,
-    daysFromNextMonth
+    daysFromNextMonth,
+    settings
   );
 
   for (let i = 0; i < calendar.length; i += 1) {
