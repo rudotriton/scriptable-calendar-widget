@@ -31,7 +31,7 @@
 - `markToday` - show a circle around today or not
 - `todayCircleColor` - if we mark days, then in what color
 - `showEventCircles` - adds colored background for all days that have an event. The color intensity is based roughly on how many events take place that day.
-- `discountAllDayEvents` - all-day events don't count towards the eventCircles' color intensity.
+- `discountAllDayEvents` - if true, all-day events don't count towards eventCircle intensity value
 - `eventCircleColor` - if showing event circles, then in what color
 - `weekdayTextColor` - color of weekdays
 - `weekendLetters` - color of the letters in the top row
