@@ -1,3 +1,4 @@
+import { Settings } from "settings";
 import getMonthBoundaries from "./getMonthBoundaries";
 
 /**
@@ -8,7 +9,8 @@ import getMonthBoundaries from "./getMonthBoundaries";
 async function countEvents(
   date: Date,
   extendToPrev = 0,
-  extendToNext = 0
+  extendToNext = 0,
+  settings: Settings
 ): Promise<EventCountInfo> {
   const { firstOfMonth } = getMonthBoundaries(date);
   const { startDate, endDate } = extendBoundaries(
@@ -16,8 +18,12 @@ async function countEvents(
     extendToPrev,
     extendToNext
   );
-  const events = await CalendarEvent.between(startDate, endDate);
+  let events = await CalendarEvent.between(startDate, endDate);
+
+  events = trimEvents(events, settings);
+
   const eventCounts: EventCounts = new Map();
+
   events.forEach((event) => {
     if (event.isAllDay) {
       const date = event.startDate;
@@ -33,6 +39,26 @@ async function countEvents(
   const intensity = calculateIntensity(eventCounts);
 
   return { eventCounts, intensity };
+}
+
+/**
+ * Remove events that we don't care about from the array, so that they won't
+ * affect the intensity of the eventCircles
+ */
+function trimEvents(events: CalendarEvent[], settings: Settings) {
+  let trimmedEvents = events;
+
+  if (settings.calFilter.length) {
+    trimmedEvents = events.filter((event) =>
+      settings.calFilter.includes(event.calendar.title)
+    );
+  }
+
+  if (settings.discountAllDayEvents || !settings.showAllDayEvents) {
+    trimmedEvents = trimmedEvents.filter((event) => !event.isAllDay);
+  }
+
+  return trimmedEvents;
 }
 
 /**

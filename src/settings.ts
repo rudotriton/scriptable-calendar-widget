@@ -14,6 +14,8 @@ const settings: Settings = {
   // parameter config would look like this:
   // { "bg": "2111.jpg", "view": "events" }
   backgroundImage: params.bg ? params.bg : "transparent.jpg",
+  // what calendars to show, all if empty or something like: ["Work"]
+  calFilter: params.calFilter ? params.calFilter : [],
   widgetBackgroundColor: "#000000",
   todayTextColor: "#000000",
   markToday: true,
@@ -22,6 +24,8 @@ const settings: Settings = {
   // background for all other days, only applicable if showEventCircles is true
   // show a circle behind each date that has an event then
   showEventCircles: true,
+  // if true, all-day events don't count towards eventCircle intensity value
+  discountAllDayEvents: false,
   eventCircleColor: "#1E5C7B",
   // color of all the other dates
   weekdayTextColor: "#ffffff",
@@ -59,19 +63,21 @@ const settings: Settings = {
   // tapping on a date opens that specific one
   individualDateTargets: false,
   // events-calendar OR a flipped calendar-events type of view for medium widget
-  flipped: false,
+  flipped: params.flipped ? params.flipped : false,
 };
 
 export interface Settings {
   debug: boolean;
   calendarApp: string;
   backgroundImage: string;
+  calFilter: string[];
   widgetBackgroundColor: string;
   todayTextColor: string;
   markToday: boolean;
   todayCircleColor: string;
   weekdayTextColor: string;
   showEventCircles: boolean;
+  discountAllDayEvents: boolean;
   eventCircleColor: string;
   locale: string;
   weekendLetters: string;
