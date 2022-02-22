@@ -11,7 +11,7 @@ function getWeekLetters(
   let week = [];
   for (let i = 1; i <= 7; i += 1) {
     // create days from Monday to Sunday
-    const day = new Date(`2021-02-0${i}`);
+    const day = new Date(`February 0${i}, 2021`);
     week.push(day.toLocaleDateString(locale, { weekday: "long" }));
   }
   // get the first letter and capitalize it as some locales have them lowercase

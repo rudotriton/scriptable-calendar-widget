@@ -9,7 +9,8 @@
     "bundle": "esbuild src/index.ts --bundle --platform=node --outfile=calendar.js",
     "postBundle": "node util/postBundle.js calendar.js --out-file=calendar.js",
     "bundle:watch": "esbuild src/index.ts --bundle --watch --platform=node --outfile=dev/bundle.js",
-    "dev": "concurrently \"npm run bundle:watch\" \"node util/watchBuildMove.js\""
+    "dev": "concurrently \"npm run bundle:watch\" \"node util/watchBuildMove.js\"",
+    "test": "jest --watch"
   },
   "repository": {
     "type": "git",
@@ -23,18 +24,21 @@
   },
   "homepage": "https://github.com/rudotriton/scriptable-calendar-widget#readme",
   "devDependencies": {
-    "@types/scriptable-ios": "^1.6.3",
-    "@typescript-eslint/eslint-plugin": "^4.29.3",
-    "@typescript-eslint/parser": "^4.29.3",
-    "chokidar": "^3.5.2",
-    "commander": "^8.1.0",
-    "concurrently": "^6.2.1",
-    "esbuild": "^0.12.24",
-    "eslint": "^7.32.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-import": "^2.24.2",
-    "eslint-plugin-prettier": "^3.4.1",
-    "prettier": "^2.3.2",
-    "typescript": "^4.4.2"
+    "@types/jest": "^27.4.0",
+    "@types/scriptable-ios": "^1.6.5",
+    "@typescript-eslint/eslint-plugin": "^5.12.1",
+    "@typescript-eslint/parser": "^5.12.1",
+    "chokidar": "^3.5.3",
+    "commander": "^9.0.0",
+    "concurrently": "^7.0.0",
+    "esbuild": "^0.14.23",
+    "eslint": "^8.9.0",
+    "eslint-config-prettier": "^8.4.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-prettier": "^4.0.0",
+    "jest": "^27.5.1",
+    "prettier": "^2.5.1",
+    "ts-jest": "^27.1.3",
+    "typescript": "^4.5.5"
   }
 }
