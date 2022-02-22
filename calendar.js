@@ -113,7 +113,7 @@ var getMonthOffset_default = getMonthOffset;
 function getWeekLetters(locale = "en-US", startWeekOnSunday = false) {
   let week = [];
   for (let i = 1; i <= 7; i += 1) {
-    const day = new Date(`2021-02-0${i}`);
+    const day = new Date(`February 0${i}, 2021`);
     week.push(day.toLocaleDateString(locale, { weekday: "long" }));
   }
   week = week.map((day) => [day.slice(0, 1).toUpperCase()]);
@@ -212,7 +212,7 @@ async function countEvents(
   );
   let events = await CalendarEvent.between(startDate, endDate);
   events = trimEvents(events, settings2);
-  const eventCounts = new Map();
+  const eventCounts = /* @__PURE__ */ new Map();
   events.forEach((event) => {
     if (event.isAllDay) {
       const date2 = event.startDate;
@@ -369,6 +369,7 @@ async function buildCalendarView(date, stack, settings2) {
   rightStack.layoutVertically();
   const dateFormatter = new DateFormatter();
   dateFormatter.dateFormat = "MMMM";
+  dateFormatter.locale = settings2.locale.split("-")[0];
   const spacing = config.widgetFamily === "small" ? 18 : 19;
   const monthLine = rightStack.addStack();
   monthLine.addSpacer(4);
