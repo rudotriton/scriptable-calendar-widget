@@ -22,6 +22,7 @@ async function buildCalendarView(
 
   const dateFormatter = new DateFormatter();
   dateFormatter.dateFormat = "MMMM";
+  dateFormatter.locale = settings.locale.split("-")[0];
 
   // if calendar is on a small widget make it a bit smaller to fit
   const spacing = config.widgetFamily === "small" ? 18 : 19;
