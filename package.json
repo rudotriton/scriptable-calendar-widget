@@ -10,7 +10,8 @@
     "postBundle": "node util/postBundle.js calendar.js --out-file=calendar.js",
     "bundle:watch": "esbuild src/index.ts --bundle --watch --platform=node --outfile=dev/bundle.js",
     "dev": "concurrently \"npm run bundle:watch\" \"node util/watchBuildMove.js\"",
-    "test": "jest --watch"
+    "test": "jest --watch",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -36,6 +37,7 @@
     "eslint-config-prettier": "^8.4.0",
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-prettier": "^4.0.0",
+    "husky": "^8.0.1",
     "jest": "^27.5.1",
     "prettier": "^2.5.1",
     "ts-jest": "^27.1.3",
