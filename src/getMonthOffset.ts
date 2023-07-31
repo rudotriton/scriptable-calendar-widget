@@ -8,7 +8,7 @@ function getMonthOffset(date: Date, offset: number): Date {
     offsetMonth -= 12;
     newDate.setFullYear(date.getFullYear() + 1);
   }
-  newDate.setMonth(offsetMonth);
+  newDate.setMonth(offsetMonth, 1);
   return newDate;
 }
 export default getMonthOffset;
