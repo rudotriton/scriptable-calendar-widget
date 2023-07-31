@@ -104,7 +104,7 @@ function getMonthOffset(date, offset) {
     offsetMonth -= 12;
     newDate.setFullYear(date.getFullYear() + 1);
   }
-  newDate.setMonth(offsetMonth);
+  newDate.setMonth(offsetMonth, 1);
   return newDate;
 }
 var getMonthOffset_default = getMonthOffset;
