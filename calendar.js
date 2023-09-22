@@ -16,6 +16,8 @@ var settings = {
   weekendLetters: "#FFB800",
   weekendLetterOpacity: 1,
   weekendDates: "#FFB800",
+  smallerPrevNextMonth: false,
+  textColorPrevNextMonth: "#9e9e9e",
   locale: "en-US",
   textColor: "#ffffff",
   eventDateTimeOpacity: 0.7,
@@ -114,7 +116,7 @@ function getWeekLetters(locale = "en-US", startWeekOnSunday = false) {
   let week = [];
   for (let i = 1; i <= 7; i += 1) {
     const day = new Date(`February 0${i}, 2021`);
-    week.push(day.toLocaleDateString(locale, { weekday: "long" }));
+    week.push(day.toLocaleDateString(locale, { weekday: "narrow" }));
   }
   week = week.map((day) => [day.slice(0, 1).toUpperCase()]);
   if (startWeekOnSunday) {
@@ -421,17 +423,20 @@ async function buildCalendarView(date, stack, settings2) {
           });
         }
       } else if (j > 0 && calendar[i][j] !== " ") {
-        const toFullSize = isDateFromBoundingMonth_default(
+        const isCurrentMonth = isDateFromBoundingMonth_default(
           i,
           j,
           date,
           calendar
         );
+        const toFullSize = settings2.smallerPrevNextMonth && isCurrentMonth;
+        let textColor = isWeekend_default(i, settings2.startWeekOnSunday)
+          ? settings2.weekendDates
+          : settings2.weekdayTextColor;
+        if (!isCurrentMonth) textColor = settings2.textColorPrevNextMonth;
         const dateImage = createDateImage_default(day, {
           backgroundColor: settings2.eventCircleColor,
-          textColor: isWeekend_default(i, settings2.startWeekOnSunday)
-            ? settings2.weekendDates
-            : settings2.weekdayTextColor,
+          textColor,
           intensity: settings2.showEventCircles
             ? eventCounts.get(calendar[i][j]) * intensity
             : 0,

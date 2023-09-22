@@ -12,7 +12,7 @@ function getWeekLetters(
   for (let i = 1; i <= 7; i += 1) {
     // create days from Monday to Sunday
     const day = new Date(`February 0${i}, 2021`);
-    week.push(day.toLocaleDateString(locale, { weekday: "long" }));
+    week.push(day.toLocaleDateString(locale, { weekday: "narrow" }));
   }
   // get the first letter and capitalize it as some locales have them lowercase
   week = week.map((day) => [day.slice(0, 1).toUpperCase()]);

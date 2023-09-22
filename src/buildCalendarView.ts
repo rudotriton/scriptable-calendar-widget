@@ -88,13 +88,16 @@ async function buildCalendarView(
         }
         // j == 0, contains the letters, so this creates all the other dates
       } else if (j > 0 && calendar[i][j] !== " ") {
-        const toFullSize = isDateFromBoundingMonth(i, j, date, calendar);
+        const isCurrentMonth = isDateFromBoundingMonth(i, j, date, calendar);
+        const toFullSize = !settings.smallerPrevNextMonth || isCurrentMonth;
+        let textColor = isWeekend(i, settings.startWeekOnSunday)
+          ? settings.weekendDates
+          : settings.weekdayTextColor;
+        if (!isCurrentMonth) textColor = settings.textColorPrevNextMonth;
 
         const dateImage = createDateImage(day, {
           backgroundColor: settings.eventCircleColor,
-          textColor: isWeekend(i, settings.startWeekOnSunday)
-            ? settings.weekendDates
-            : settings.weekdayTextColor,
+          textColor: textColor,
           intensity: settings.showEventCircles
             ? eventCounts.get(calendar[i][j]) * intensity
             : 0,

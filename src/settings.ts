@@ -35,6 +35,11 @@ const settings: Settings = {
   weekendLetterOpacity: 1,
   weekendDates: "#FFB800",
 
+  // show smaller text for prev or next month
+  smallerPrevNextMonth: false,
+  // text color for prev or next month
+  textColorPrevNextMonth: "#9e9e9e",
+
   // changes some locale specific values, such as weekday letters
   locale: "en-US",
 
@@ -83,6 +88,8 @@ export interface Settings {
   weekendLetters: string;
   weekendLetterOpacity: number;
   weekendDates: string;
+  smallerPrevNextMonth: boolean;
+  textColorPrevNextMonth: string;
   textColor: string;
   eventDateTimeOpacity: number;
   widgetType: string;
