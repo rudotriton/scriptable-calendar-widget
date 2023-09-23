@@ -51,6 +51,8 @@ const settings: Settings = {
   widgetType: params.view ? params.view : "cal",
   // show or hide all day events
   showAllDayEvents: true,
+  // show an icon if the event is all day
+  showIconForAllDayEvents: true,
   // show calendar colored bullet for each event
   showCalendarBullet: true,
   // week starts on a Sunday
@@ -61,6 +63,10 @@ const settings: Settings = {
   nextNumOfDays: 7,
   // show full title or truncate to a single line
   showCompleteTitle: false,
+  // show event location if available
+  showEventLocation: true,
+  // show event duration
+  showEventTime: true,
   // shows the last days of the previous month if they fit
   showPrevMonth: true,
   // shows the last days of the previous month if they fit
@@ -94,11 +100,14 @@ export interface Settings {
   eventDateTimeOpacity: number;
   widgetType: string;
   showAllDayEvents: boolean;
+  showIconForAllDayEvents: boolean;
   showCalendarBullet: boolean;
   startWeekOnSunday: boolean;
   showEventsOnlyForToday: boolean;
   nextNumOfDays: number;
   showCompleteTitle: boolean;
+  showEventLocation: boolean;
+  showEventTime: boolean;
   showPrevMonth: boolean;
   showNextMonth: boolean;
   individualDateTargets: boolean;

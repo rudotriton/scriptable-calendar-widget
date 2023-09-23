@@ -18,6 +18,7 @@ async function buildCalendarView(
   settings: Settings
 ): Promise<void> {
   const rightStack = stack.addStack();
+  rightStack.addSpacer();
   rightStack.layoutVertically();
 
   const dateFormatter = new DateFormatter();
@@ -119,6 +120,7 @@ async function buildCalendarView(
       }
     }
   }
+  rightStack.addSpacer();
 }
 
 export default buildCalendarView;

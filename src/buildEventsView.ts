@@ -1,6 +1,8 @@
+import createUrl from "createUrl";
 import addWidgetTextLine from "./addWidgetTextLine";
 import formatEvent from "./formatEvent";
 import { Settings } from "./settings";
+import dateToReadableDiff from "dateToReadableDiff";
 
 /**
  * Builds the events view
@@ -14,14 +16,14 @@ async function buildEventsView(
   {
     horizontalAlign = "left",
     verticalAlign = "center",
-    eventLimit = 3,
-    eventSpacer = 8,
+    eventSpacer = 4,
+    lineSpaceLimit = 7,
     showMsg = true,
   }: {
     horizontalAlign?: string;
     verticalAlign?: string;
-    eventLimit?: number;
     eventSpacer?: number;
+    lineSpaceLimit?: number;
     showMsg?: boolean;
   } = {}
 ): Promise<void> {
@@ -39,14 +41,44 @@ async function buildEventsView(
 
   // if we have events today; else if we don't
   if (events.length !== 0) {
+    const groupStack: Map<string, WidgetStack> = new Map();
     // show the next 3 events at most
-    const numEvents = events.length > eventLimit ? eventLimit : events.length;
-    for (let i = 0; i < numEvents; i += 1) {
-      formatEvent(leftStack, events[i], settings);
-      // don't add a spacer after the last event
-      if (i < numEvents - 1) {
-        leftStack.addSpacer(eventSpacer);
+    const numEvents = events.length;// > eventLimit ? eventLimit : events.length;
+    // don't show location if more than 2 events
+    const showLocation = settings.showEventLocation;
+    let spaceLeft = lineSpaceLimit;
+    let i = 0;
+    while (spaceLeft > 0 && i < numEvents) {
+      let stack: WidgetStack;
+      let eventDate = dateToReadableDiff(events[i].startDate, settings.locale);
+      if (groupStack.has(eventDate)) {
+        stack = groupStack.get(eventDate);
+      } else {
+        stack = leftStack.addStack();
+        stack.layoutVertically();
+        groupStack.set(eventDate, stack);
+        addWidgetTextLine(eventDate, stack, {
+          textColor: settings.textColorPrevNextMonth,
+          font: Font.regularSystemFont(13),
+        });
+        stack.url = createUrl(
+          events[i].startDate.getDate().toString(),
+          events[i].startDate.getMonth().toString(),
+          events[i].startDate, settings)
+        spaceLeft--;
       }
+      const showTime = settings.showEventTime;
+      const spaceUsed = formatEvent(stack, events[i], {
+        ...settings,
+        showEventLocation: spaceLeft >= 3 ? showLocation : false,
+        showEventTime: spaceLeft >= 2 ? showTime : false,
+      });
+      spaceLeft -= spaceUsed;
+      // don't add a spacer after the last event
+      if (spaceLeft > 0 && i < numEvents) {
+        stack.addSpacer(eventSpacer);
+      }
+      i++;
     }
   } else if (showMsg) {
     addWidgetTextLine(`No more events.`, leftStack, {

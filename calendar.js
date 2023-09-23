@@ -1,3 +1,29 @@
+var __defProp = Object.defineProperty;
+var __defProps = Object.defineProperties;
+var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
+var __getOwnPropSymbols = Object.getOwnPropertySymbols;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __propIsEnum = Object.prototype.propertyIsEnumerable;
+var __defNormalProp = (obj, key, value) =>
+  key in obj
+    ? __defProp(obj, key, {
+        enumerable: true,
+        configurable: true,
+        writable: true,
+        value,
+      })
+    : (obj[key] = value);
+var __spreadValues = (a, b) => {
+  for (var prop in b || (b = {}))
+    if (__hasOwnProp.call(b, prop)) __defNormalProp(a, prop, b[prop]);
+  if (__getOwnPropSymbols)
+    for (var prop of __getOwnPropSymbols(b)) {
+      if (__propIsEnum.call(b, prop)) __defNormalProp(a, prop, b[prop]);
+    }
+  return a;
+};
+var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
+
 // src/settings.ts
 var params = JSON.parse(args.widgetParameter) || {};
 var settings = {
@@ -23,11 +49,14 @@ var settings = {
   eventDateTimeOpacity: 0.7,
   widgetType: params.view ? params.view : "cal",
   showAllDayEvents: true,
+  showIconForAllDayEvents: true,
   showCalendarBullet: true,
   startWeekOnSunday: false,
   showEventsOnlyForToday: false,
   nextNumOfDays: 7,
   showCompleteTitle: false,
+  showEventLocation: true,
+  showEventTime: true,
   showPrevMonth: true,
   showNextMonth: true,
   individualDateTargets: false,
@@ -368,6 +397,7 @@ var createUrl_default = createUrl;
 // src/buildCalendarView.ts
 async function buildCalendarView(date, stack, settings2) {
   const rightStack = stack.addStack();
+  rightStack.addSpacer();
   rightStack.layoutVertically();
   const dateFormatter = new DateFormatter();
   dateFormatter.dateFormat = "MMMM";
@@ -429,7 +459,7 @@ async function buildCalendarView(date, stack, settings2) {
           date,
           calendar
         );
-        const toFullSize = settings2.smallerPrevNextMonth && isCurrentMonth;
+        const toFullSize = !settings2.smallerPrevNextMonth || isCurrentMonth;
         let textColor = isWeekend_default(i, settings2.startWeekOnSunday)
           ? settings2.weekendDates
           : settings2.weekdayTextColor;
@@ -457,6 +487,7 @@ async function buildCalendarView(date, stack, settings2) {
       }
     }
   }
+  rightStack.addSpacer();
 }
 var buildCalendarView_default = buildCalendarView;
 
@@ -468,22 +499,6 @@ function formatTime(date) {
   return dateFormatter.string(date);
 }
 var formatTime_default = formatTime;
-
-// src/getSuffix.ts
-function getSuffix(date) {
-  if (date > 3 && date < 21) return "th";
-  switch (date % 10) {
-    case 1:
-      return "st";
-    case 2:
-      return "nd";
-    case 3:
-      return "rd";
-    default:
-      return "th";
-  }
-}
-var getSuffix_default = getSuffix;
 
 // src/getEventIcon.ts
 function getEventIcon(event) {
@@ -505,46 +520,117 @@ function getEventIcon(event) {
 }
 var getEventIcon_default = getEventIcon;
 
+// src/getImageFromBase64.ts
+function getImageFromBase64(base64String) {
+  const data = Data.fromBase64String(base64String);
+  return Image.fromData(data);
+}
+var getImageFromBase64_default = getImageFromBase64;
+
+// src/iconAllDay.ts
+var base64Image =
+  "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";
+function iconFullDay() {
+  return getImageFromBase64_default(base64Image);
+}
+var iconAllDay_default = iconFullDay;
+
 // src/formatEvent.ts
 function formatEvent(
   stack,
   event,
-  { eventDateTimeOpacity, textColor, showCalendarBullet, showCompleteTitle }
+  {
+    eventDateTimeOpacity,
+    textColor,
+    showCalendarBullet,
+    showCompleteTitle,
+    showEventLocation,
+    showEventTime,
+    showIconForAllDayEvents,
+  }
 ) {
   const eventLine = stack.addStack();
+  const backgroundColor = new Color(event.calendar.color.hex, 0.3);
+  eventLine.backgroundColor = backgroundColor;
+  eventLine.layoutVertically();
+  eventLine.cornerRadius = 5;
+  eventLine.setPadding(3, 3, 3, 3);
+  eventLine.size = new Size(150, 0);
+  let lineCount = 0;
+  const titleStack = eventLine.addStack();
   if (showCalendarBullet) {
     const icon = getEventIcon_default(event);
-    addWidgetTextLine_default(icon, eventLine, {
+    addWidgetTextLine_default(icon, titleStack, {
       textColor: event.calendar.color.hex,
-      font: Font.mediumSystemFont(14),
+      font: Font.mediumSystemFont(13),
       lineLimit: showCompleteTitle ? 0 : 1,
     });
   }
-  addWidgetTextLine_default(event.title, eventLine, {
+  addWidgetTextLine_default(event.title, titleStack, {
     textColor,
-    font: Font.mediumSystemFont(14),
+    font: Font.mediumSystemFont(13),
     lineLimit: showCompleteTitle ? 0 : 1,
   });
-  let time;
-  if (event.isAllDay) {
-    time = "All Day";
-  } else {
-    time = `${formatTime_default(event.startDate)} - ${formatTime_default(
-      event.endDate
-    )}`;
+  if (showIconForAllDayEvents && event.isAllDay) {
+    titleStack.addSpacer();
+    const icon = titleStack.addImage(iconAllDay_default());
+    icon.imageSize = new Size(15, 15);
+    icon.rightAlignImage();
+    icon.tintColor = new Color(textColor);
   }
-  const today = new Date().getDate();
-  const eventDate = event.startDate.getDate();
-  if (eventDate !== today) {
-    time = `${eventDate}${getSuffix_default(eventDate)} ${time}`;
+  lineCount++;
+  if (showEventLocation && event.location) {
+    addWidgetTextLine_default(event.location, eventLine.addStack(), {
+      textColor,
+      opacity: eventDateTimeOpacity,
+      font: Font.mediumSystemFont(12),
+      lineLimit: showCompleteTitle ? 0 : 1,
+    });
+    lineCount++;
   }
-  addWidgetTextLine_default(time, stack, {
-    textColor,
-    opacity: eventDateTimeOpacity,
-    font: Font.regularSystemFont(14),
-  });
+  if (showEventTime) {
+    let time = "";
+    if (!event.isAllDay) {
+      time = `${formatTime_default(event.startDate)} - ${formatTime_default(
+        event.endDate
+      )}`;
+    }
+    if (time) {
+      const timeStack = eventLine.addStack();
+      addWidgetTextLine_default(time, timeStack, {
+        textColor,
+        opacity: eventDateTimeOpacity,
+        font: Font.regularSystemFont(12),
+      });
+      lineCount++;
+    }
+  }
+  return lineCount;
 }
 var formatEvent_default = formatEvent;
+
+// src/dateToReadableDiff.ts
+function dateToReadableDiff(d1, locale = "en-GB") {
+  const now = new Date();
+  now.setHours(0);
+  now.setMinutes(0);
+  now.setSeconds(0);
+  now.setMilliseconds(0);
+  const diff = d1.valueOf() - now.valueOf();
+  const dateDiff = Math.floor(diff / (1e3 * 60 * 60 * 24));
+  if (dateDiff < 0) {
+    return "";
+  } else if (dateDiff == 0) {
+    return "Today";
+  } else if (dateDiff == 1) {
+    return "Tomorrow";
+  } else if (dateDiff > 1 && dateDiff < 7) {
+    return `${dateDiff} days later`;
+  } else {
+    return d1.toLocaleDateString(locale, { month: "long", day: "numeric" });
+  }
+}
+var dateToReadableDiff_default = dateToReadableDiff;
 
 // src/buildEventsView.ts
 async function buildEventsView(
@@ -554,8 +640,8 @@ async function buildEventsView(
   {
     horizontalAlign = "left",
     verticalAlign = "center",
-    eventLimit = 3,
-    eventSpacer = 8,
+    eventSpacer = 4,
+    lineSpaceLimit = 7,
     showMsg = true,
   } = {}
 ) {
@@ -568,12 +654,49 @@ async function buildEventsView(
     leftStack.addSpacer();
   }
   if (events.length !== 0) {
-    const numEvents = events.length > eventLimit ? eventLimit : events.length;
-    for (let i = 0; i < numEvents; i += 1) {
-      formatEvent_default(leftStack, events[i], settings2);
-      if (i < numEvents - 1) {
-        leftStack.addSpacer(eventSpacer);
+    const groupStack = /* @__PURE__ */ new Map();
+    const numEvents = events.length;
+    const showLocation = settings2.showEventLocation;
+    let spaceLeft = lineSpaceLimit;
+    let i = 0;
+    while (spaceLeft > 0 && i < numEvents) {
+      let stack2;
+      let eventDate = dateToReadableDiff_default(
+        events[i].startDate,
+        settings2.locale
+      );
+      if (groupStack.has(eventDate)) {
+        stack2 = groupStack.get(eventDate);
+      } else {
+        stack2 = leftStack.addStack();
+        stack2.layoutVertically();
+        groupStack.set(eventDate, stack2);
+        addWidgetTextLine_default(eventDate, stack2, {
+          textColor: settings2.textColorPrevNextMonth,
+          font: Font.regularSystemFont(13),
+        });
+        stack2.url = createUrl_default(
+          events[i].startDate.getDate().toString(),
+          events[i].startDate.getMonth().toString(),
+          events[i].startDate,
+          settings2
+        );
+        spaceLeft--;
       }
+      const showTime = settings2.showEventTime;
+      const spaceUsed = formatEvent_default(
+        stack2,
+        events[i],
+        __spreadProps(__spreadValues({}, settings2), {
+          showEventLocation: spaceLeft >= 3 ? showLocation : false,
+          showEventTime: spaceLeft >= 2 ? showTime : false,
+        })
+      );
+      spaceLeft -= spaceUsed;
+      if (spaceLeft > 0 && i < numEvents) {
+        stack2.addSpacer(eventSpacer);
+      }
+      i++;
     }
   } else if (showMsg) {
     addWidgetTextLine_default(`No more events.`, leftStack, {
@@ -636,13 +759,13 @@ async function buildLargeWidget(date, events, stack, settings2) {
   const leftSideEvents = events.slice(0, 8);
   const rightSideEvents = events.slice(8, 12);
   await buildEventsView_default(leftSideEvents, leftSide, settings2, {
-    eventLimit: 8,
+    lineSpaceLimit: 16,
     eventSpacer: 6,
   });
   await buildCalendarView_default(date, rightSide, settings2);
   rightSide.addSpacer();
   await buildEventsView_default(rightSideEvents, rightSide, settings2, {
-    eventLimit: 4,
+    lineSpaceLimit: 12,
     eventSpacer: 6,
     verticalAlign: "top",
     showMsg: false,
