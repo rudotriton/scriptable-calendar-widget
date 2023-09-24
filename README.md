@@ -52,6 +52,7 @@
 - `showCompleteTitle` - would truncate long event titles so that they can fit onto a single line to fit more events into the view.
 - `showEventLocation` - show the location infomation of the event if availabe.
 - `showEventTime` - show or hide the event time.
+- `clock24Hour` - use 12 or 24 hour clock for displaying time.
 - `showPrevMonth` - would show days from the previous month if they fit into the calendar view.
 - `showNextMonth` - would show days from the next month if they fit into the calendar view.
 - `individualDateTargets` - would allow tapping on a date to open that specific day in the calendar set by the `calendarApp` setting. (atm, supports default iOS calendar and Fantastical callback urls, should be possible to add more).
