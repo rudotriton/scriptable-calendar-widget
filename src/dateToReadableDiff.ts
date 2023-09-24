@@ -23,7 +23,7 @@ function dateToReadableDiff(d1: Date, locale: string = 'en-GB') {
   } else if (dateDiff > 1 && dateDiff <= 3) {
     return tr(locale, 'daysAfter', dateDiff);
   } else {
-    return d1.toLocaleDateString(locale, { month: 'long', day: 'numeric' });
+    return d1.toLocaleDateString(locale, { month: 'long', day: 'numeric', weekday: 'short' });
   }
 }
 
