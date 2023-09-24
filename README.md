@@ -21,6 +21,23 @@
 
 ## Customization
 
+It is recommended to put your settings into another script named `calendar-settings.js` or in script parameter, so that updating the calendar script will not reset your settings.
+
+The basic syntax of `calendar-settings.js` could be:
+```js
+module.exports = {
+  // Put the settings you want to customize here
+  calFilter: ['Work'],
+  locale: 'ja-JP',
+  todayCircleColor: '#FF4539',
+  startWeekOnSunday: true,
+  showEventLocation: true,
+}
+```
+You can write anything in the settings script as long as the script is exporting an object.
+
+### Available Settings
+
 - `debug` - set to `true` to show the widget in Scriptable, `false` to open a
   calendar app.
 - `calendarApp` - Tapping on the widget launches a calendar app (as long as `debug: false`), by default it launches the iOS Calendar app, however it can be changed to anything as long as the app supports callback URLs. Changing the `calshow` to something else would open other apps. E.g. for Google Calendar it is `googlecalendar`, for Fantastical it is `x-fantastical3`.

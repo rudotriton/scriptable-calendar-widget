@@ -1,7 +1,12 @@
 // get widget params
 const params = JSON.parse(args.widgetParameter) || {};
 
-const settings: Settings = {
+let importedSettings: any = {};
+try {
+  importedSettings = importModule('calendar-settings');
+} catch {}
+
+const defaultSettings: Settings = {
   // set to true to initially give Scriptable calendar access
   // set to false to open Calendar when script is run - when tapping on the widget
   debug: false,
@@ -13,9 +18,9 @@ const settings: Settings = {
   // Long press on widget -> Edit Widget -> Parameter
   // parameter config would look like this:
   // { "bg": "2111.jpg", "view": "events" }
-  backgroundImage: params.bg ? params.bg : "transparent.jpg",
+  backgroundImage: "transparent.jpg",
   // what calendars to show, all if empty or something like: ["Work"]
-  calFilter: params.calFilter ? params.calFilter : [],
+  calFilter: [],
   widgetBackgroundColor: "#000000",
   todayTextColor: "#000000",
   markToday: true,
@@ -48,7 +53,7 @@ const settings: Settings = {
   // opacity value for event times
   eventDateTimeOpacity: 0.7,
   // what the widget shows
-  widgetType: params.view ? params.view : "cal",
+  widgetType: "cal",
   // show or hide all day events
   showAllDayEvents: true,
   // show an icon if the event is all day
@@ -76,7 +81,7 @@ const settings: Settings = {
   // tapping on a date opens that specific one
   individualDateTargets: false,
   // events-calendar OR a flipped calendar-events type of view for medium widget
-  flipped: params.flipped ? params.flipped : false,
+  flipped: false,
 };
 
 export interface Settings {
@@ -115,6 +120,13 @@ export interface Settings {
   showNextMonth: boolean;
   individualDateTargets: boolean;
   flipped: boolean;
+}
+
+// Merge settings. Latest item takes priority
+const settings = {
+  ...defaultSettings,
+  ...importedSettings,
+  ...params
 }
 
 export default settings;

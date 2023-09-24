@@ -26,11 +26,15 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
 
 // src/settings.ts
 var params = JSON.parse(args.widgetParameter) || {};
-var settings = {
+var importedSettings = {};
+try {
+  importedSettings = importModule("calendar-settings");
+} catch (e) {}
+var defaultSettings = {
   debug: false,
   calendarApp: "calshow",
-  backgroundImage: params.bg ? params.bg : "transparent.jpg",
-  calFilter: params.calFilter ? params.calFilter : [],
+  backgroundImage: "transparent.jpg",
+  calFilter: [],
   widgetBackgroundColor: "#000000",
   todayTextColor: "#000000",
   markToday: true,
@@ -47,7 +51,7 @@ var settings = {
   locale: "en-US",
   textColor: "#ffffff",
   eventDateTimeOpacity: 0.7,
-  widgetType: params.view ? params.view : "cal",
+  widgetType: "cal",
   showAllDayEvents: true,
   showIconForAllDayEvents: true,
   showCalendarBullet: true,
@@ -61,8 +65,12 @@ var settings = {
   showPrevMonth: true,
   showNextMonth: true,
   individualDateTargets: false,
-  flipped: params.flipped ? params.flipped : false,
+  flipped: false,
 };
+var settings = __spreadValues(
+  __spreadValues(__spreadValues({}, defaultSettings), importedSettings),
+  params
+);
 var settings_default = settings;
 
 // src/setWidgetBackground.ts
