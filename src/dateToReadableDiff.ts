@@ -1,3 +1,5 @@
+import tr from "i18n";
+
 /**
  * Compare a date with current date and convert to readable date difference
  * 
@@ -15,11 +17,11 @@ function dateToReadableDiff(d1: Date, locale: string = 'en-GB') {
   if (dateDiff < 0) {
     return ''; // date passed
   } else if (dateDiff == 0) {
-    return 'Today';
+    return tr(locale, 'today');
   } else if (dateDiff == 1) {
-    return 'Tomorrow';
-  } else if (dateDiff > 1 && dateDiff < 7) {
-    return `${dateDiff} days later`;
+    return tr(locale, 'tomorrow');
+  } else if (dateDiff > 1 && dateDiff <= 3) {
+    return tr(locale, 'daysAfter', dateDiff);
   } else {
     return d1.toLocaleDateString(locale, { month: 'long', day: 'numeric' });
   }

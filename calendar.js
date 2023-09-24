@@ -648,6 +648,52 @@ function formatEvent(
 }
 var formatEvent_default = formatEvent;
 
+// src/formatString.ts
+function formatString(format, ...args2) {
+  return format.replace(/{(\d+)}/g, function (match, number) {
+    return typeof args2[number] != "undefined" ? args2[number] : match;
+  });
+}
+var formatString_default = formatString;
+
+// src/i18n.ts
+var translation = {
+  en: {
+    today: "Today",
+    tomorrow: "Tomorrow",
+    daysAfter: "{0} days after",
+  },
+  zh_CN: {
+    today: "\u4ECA\u5929",
+    tomorrow: "\u660E\u5929",
+    daysAfter: "{0}\u5929\u540E",
+  },
+  zh: {
+    today: "\u4ECA\u5929",
+    tomorrow: "\u660E\u5929",
+    daysAfter: "{0}\u5929\u5F8C",
+  },
+  ja: {
+    today: "\u4ECA\u65E5",
+    tomorrow: "\u660E\u65E5",
+    daysAfter: "{0}\u65E5\u5F8C",
+  },
+};
+function tr(locale, key, ...args2) {
+  locale = locale.replace("-", "_");
+  let trValue;
+  if (locale in translation) {
+    trValue = translation[locale][key];
+  } else if (locale.split("_")[0] in translation) {
+    trValue = translation[locale.split("_")[0]][key];
+  } else {
+    trValue = translation["en"][key];
+  }
+  if (args2.length) return formatString_default(trValue, ...args2);
+  else return trValue;
+}
+var i18n_default = tr;
+
 // src/dateToReadableDiff.ts
 function dateToReadableDiff(d1, locale = "en-GB") {
   const now = new Date();
@@ -660,11 +706,11 @@ function dateToReadableDiff(d1, locale = "en-GB") {
   if (dateDiff < 0) {
     return "";
   } else if (dateDiff == 0) {
-    return "Today";
+    return i18n_default(locale, "today");
   } else if (dateDiff == 1) {
-    return "Tomorrow";
-  } else if (dateDiff > 1 && dateDiff < 7) {
-    return `${dateDiff} days later`;
+    return i18n_default(locale, "tomorrow");
+  } else if (dateDiff > 1 && dateDiff <= 3) {
+    return i18n_default(locale, "daysAfter", dateDiff);
   } else {
     return d1.toLocaleDateString(locale, { month: "long", day: "numeric" });
   }
