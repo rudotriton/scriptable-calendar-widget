@@ -37,16 +37,21 @@
 - `weekendLetters` - color of the letters in the top row
 - `weekendLettersOpacity` - a value between 0 and 1 to dim the color of the letters
 - `weekendDates` - color of the weekend days
+- `smallerPrevNextMonth` - date size for previous or next month
+- `textColorPrevNextMonth` - text color for previous or next month
 - `locale` - a Unicode locale identifier string, this would change the weekday letters to the specified language.
 - `textColor` - color of all the other text
 - `eventDateTimeOpacity` - opacity value for event times
 - `widgetType` - for small widgets it determines which side to show. This would be set through widget parameters in order to set it per widget basis, rather than setting here and having all small widgets be the same type. (check: [Small widgets](#small-widgets))
 - `showAllDayEvents` - would either show or hide all day events.
+- `showIconForAllDayEvents` - show an icon for all day event.
 - `showCalendarBullet` - would show a `●` in front of the event name which matches the calendar color from which the event originates.
 - `startWeekOnSunday` - would start the week either on a Sunday or a Monday.
 - `showEventsOnlyForToday` - would either limit the events to today or a specified number of future days with `nextNumOfDays`
 - `nextNumOfDays` - if `showEventsOnlyForToday` is set to `false`, this allows specifying how far into the future to look for events. There is probably a limit by iOS on how far into the future it can look.
 - `showCompleteTitle` - would truncate long event titles so that they can fit onto a single line to fit more events into the view.
+- `showEventLocation` - show the location infomation of the event if availabe.
+- `showEventTime` - show or hide the event time.
 - `showPrevMonth` - would show days from the previous month if they fit into the calendar view.
 - `showNextMonth` - would show days from the next month if they fit into the calendar view.
 - `individualDateTargets` - would allow tapping on a date to open that specific day in the calendar set by the `calendarApp` setting. (atm, supports default iOS calendar and Fantastical callback urls, should be possible to add more).
