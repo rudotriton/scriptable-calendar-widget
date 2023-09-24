@@ -4,6 +4,7 @@ import getSuffix from "./getSuffix";
 import getEventIcon from "getEventIcon";
 import { Settings } from "./settings";
 import iconFullDay from "iconAllDay";
+import formatDuration from "formatDuration";
 
 /**
  * Adds a event name along with start and end times to widget stack
@@ -20,6 +21,8 @@ function formatEvent(
     showEventLocation,
     showEventTime,
     showIconForAllDayEvents,
+    clock24Hour,
+    locale,
   }: Partial<Settings>
 ): number {
   const eventLine = stack.addStack();
@@ -74,7 +77,7 @@ function formatEvent(
     // event duration
     let time: string = '';
     if (!event.isAllDay) {
-      time = `${formatTime(event.startDate)} - ${formatTime(event.endDate)}`;
+      time = formatDuration(event.startDate, event.endDate, {clock24Hour, locale});
     }
 
     // event time

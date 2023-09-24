@@ -67,6 +67,8 @@ const settings: Settings = {
   showEventLocation: true,
   // show event duration
   showEventTime: true,
+  // Use 24 hour clock
+  clock24Hour: false,
   // shows the last days of the previous month if they fit
   showPrevMonth: true,
   // shows the last days of the previous month if they fit
@@ -108,6 +110,7 @@ export interface Settings {
   showCompleteTitle: boolean;
   showEventLocation: boolean;
   showEventTime: boolean;
+  clock24Hour: boolean;
   showPrevMonth: boolean;
   showNextMonth: boolean;
   individualDateTargets: boolean;

@@ -57,6 +57,7 @@ var settings = {
   showCompleteTitle: false,
   showEventLocation: true,
   showEventTime: true,
+  clock24Hour: false,
   showPrevMonth: true,
   showNextMonth: true,
   individualDateTargets: false,
@@ -491,15 +492,6 @@ async function buildCalendarView(date, stack, settings2) {
 }
 var buildCalendarView_default = buildCalendarView;
 
-// src/formatTime.ts
-function formatTime(date) {
-  const dateFormatter = new DateFormatter();
-  dateFormatter.useNoDateStyle();
-  dateFormatter.useShortTimeStyle();
-  return dateFormatter.string(date);
-}
-var formatTime_default = formatTime;
-
 // src/getEventIcon.ts
 function getEventIcon(event) {
   if (event.attendees === null) {
@@ -535,6 +527,50 @@ function iconFullDay() {
 }
 var iconAllDay_default = iconFullDay;
 
+// src/formatDuration.ts
+function formatDuration(startDate, endDate, { clock24Hour, locale }) {
+  if (clock24Hour) {
+    const formatter = Intl.DateTimeFormat(locale, {
+      hour: "numeric",
+      minute: "numeric",
+    });
+    return `${formatter.format(startDate)}-${formatter.format(endDate)}`;
+  } else {
+    const formatter = Intl.DateTimeFormat(locale, {
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+    });
+    const startDayParts = formatter.formatToParts(startDate);
+    const endDayParts = formatter.formatToParts(endDate);
+    const startPeriod = startDayParts.find((p) => p.type === "dayPeriod").value;
+    const endPeriod = endDayParts.find((p) => p.type === "dayPeriod").value;
+    if (startPeriod === endPeriod) {
+      if (isPeriodFirst(startDayParts)) {
+        log(
+          `${joinDateParts(startDayParts)}-${joinDateParts(
+            endDayParts.filter((p) => p.type !== "dayPeriod")
+          )}`
+        );
+        return `${joinDateParts(startDayParts)}-${joinDateParts(
+          endDayParts.filter((p) => p.type !== "dayPeriod")
+        )}`;
+      }
+    }
+    return `${joinDateParts(startDayParts)}-${joinDateParts(endDayParts)}`;
+  }
+}
+function joinDateParts(parts) {
+  return parts.map((p) => p.value).join("");
+}
+function isPeriodFirst(parts) {
+  for (let part of parts) {
+    if (part.type === "dayPeriod") return true;
+    if (part.type === "hour" || part.type === "minute") return false;
+  }
+}
+var formatDuration_default = formatDuration;
+
 // src/formatEvent.ts
 function formatEvent(
   stack,
@@ -547,6 +583,8 @@ function formatEvent(
     showEventLocation,
     showEventTime,
     showIconForAllDayEvents,
+    clock24Hour,
+    locale,
   }
 ) {
   const eventLine = stack.addStack();
@@ -591,9 +629,10 @@ function formatEvent(
   if (showEventTime) {
     let time = "";
     if (!event.isAllDay) {
-      time = `${formatTime_default(event.startDate)} - ${formatTime_default(
-        event.endDate
-      )}`;
+      time = formatDuration_default(event.startDate, event.endDate, {
+        clock24Hour,
+        locale,
+      });
     }
     if (time) {
       const timeStack = eventLine.addStack();
