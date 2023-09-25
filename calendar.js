@@ -757,6 +757,9 @@ async function buildEventsView(
       if (groupStack.has(eventDate)) {
         stack2 = groupStack.get(eventDate);
       } else {
+        if (spaceLeft <= 1) {
+          break;
+        }
         stack2 = leftStack.addStack();
         stack2.layoutVertically();
         groupStack.set(eventDate, stack2);
