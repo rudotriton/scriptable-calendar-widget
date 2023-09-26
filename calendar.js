@@ -48,7 +48,7 @@ var defaultSettings = {
   weekendDates: "#FFB800",
   smallerPrevNextMonth: false,
   textColorPrevNextMonth: "#9e9e9e",
-  locale: "en-US",
+  locale: Device.locale(),
   textColor: "#ffffff",
   eventDateTimeOpacity: 0.7,
   widgetType: "cal",
@@ -520,18 +520,9 @@ function getEventIcon(event) {
 }
 var getEventIcon_default = getEventIcon;
 
-// src/getImageFromBase64.ts
-function getImageFromBase64(base64String) {
-  const data = Data.fromBase64String(base64String);
-  return Image.fromData(data);
-}
-var getImageFromBase64_default = getImageFromBase64;
-
 // src/iconAllDay.ts
-var base64Image =
-  "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";
 function iconFullDay() {
-  return getImageFromBase64_default(base64Image);
+  return SFSymbol.named("clock.badge").image;
 }
 var iconAllDay_default = iconFullDay;
 
@@ -656,52 +647,6 @@ function formatEvent(
 }
 var formatEvent_default = formatEvent;
 
-// src/formatString.ts
-function formatString(format, ...args2) {
-  return format.replace(/{(\d+)}/g, function (match, number) {
-    return typeof args2[number] != "undefined" ? args2[number] : match;
-  });
-}
-var formatString_default = formatString;
-
-// src/i18n.ts
-var translation = {
-  en: {
-    today: "Today",
-    tomorrow: "Tomorrow",
-    daysAfter: "{0} days after",
-  },
-  zh_CN: {
-    today: "\u4ECA\u5929",
-    tomorrow: "\u660E\u5929",
-    daysAfter: "{0}\u5929\u540E",
-  },
-  zh: {
-    today: "\u4ECA\u5929",
-    tomorrow: "\u660E\u5929",
-    daysAfter: "{0}\u5929\u5F8C",
-  },
-  ja: {
-    today: "\u4ECA\u65E5",
-    tomorrow: "\u660E\u65E5",
-    daysAfter: "{0}\u65E5\u5F8C",
-  },
-};
-function tr(locale, key, ...args2) {
-  locale = locale.replace("-", "_");
-  let trValue;
-  if (locale in translation) {
-    trValue = translation[locale][key];
-  } else if (locale.split("_")[0] in translation) {
-    trValue = translation[locale.split("_")[0]][key];
-  } else {
-    trValue = translation["en"][key];
-  }
-  if (args2.length) return formatString_default(trValue, ...args2);
-  else return trValue;
-}
-var i18n_default = tr;
-
 // src/dateToReadableDiff.ts
 function dateToReadableDiff(d1, locale = "en-GB") {
   const now = new Date();
@@ -711,14 +656,15 @@ function dateToReadableDiff(d1, locale = "en-GB") {
   now.setMilliseconds(0);
   const diff = d1.valueOf() - now.valueOf();
   const dateDiff = Math.floor(diff / (1e3 * 60 * 60 * 24));
+  const formatter = new RelativeDateTimeFormatter();
+  formatter.useNamedDateTimeStyle();
+  formatter.locale = locale;
   if (dateDiff < 0) {
     return "";
   } else if (dateDiff == 0) {
-    return i18n_default(locale, "today");
-  } else if (dateDiff == 1) {
-    return i18n_default(locale, "tomorrow");
-  } else if (dateDiff > 1 && dateDiff <= 3) {
-    return i18n_default(locale, "daysAfter", dateDiff);
+    return "today";
+  } else if (dateDiff <= 3) {
+    return formatter.string(d1, now);
   } else {
     return d1.toLocaleDateString(locale, {
       month: "long",
@@ -771,17 +717,19 @@ async function buildEventsView(
         stack2 = leftStack.addStack();
         stack2.layoutVertically();
         groupStack.set(eventDate, stack2);
-        addWidgetTextLine_default(eventDate, stack2, {
-          textColor: settings2.textColorPrevNextMonth,
-          font: Font.regularSystemFont(13),
-        });
+        if (eventDate !== "today") {
+          addWidgetTextLine_default(eventDate, stack2, {
+            textColor: settings2.textColorPrevNextMonth,
+            font: Font.regularSystemFont(13),
+          });
+          spaceLeft--;
+        }
         stack2.url = createUrl_default(
           events[i].startDate.getDate().toString(),
           events[i].startDate.getMonth().toString(),
           events[i].startDate,
           settings2
         );
-        spaceLeft--;
       }
       const showTime = settings2.showEventTime;
       const spaceUsed = formatEvent_default(

@@ -46,7 +46,7 @@ const defaultSettings: Settings = {
   textColorPrevNextMonth: "#9e9e9e",
 
   // changes some locale specific values, such as weekday letters
-  locale: "en-US",
+  locale: Device.locale(),
 
   // color for events
   textColor: "#ffffff",

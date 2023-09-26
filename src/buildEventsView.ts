@@ -61,15 +61,18 @@ async function buildEventsView(
         stack = leftStack.addStack();
         stack.layoutVertically();
         groupStack.set(eventDate, stack);
-        addWidgetTextLine(eventDate, stack, {
-          textColor: settings.textColorPrevNextMonth,
-          font: Font.regularSystemFont(13),
-        });
+        // No locale string for "today", don't display it
+        if (eventDate !== 'today') {
+          addWidgetTextLine(eventDate, stack, {
+            textColor: settings.textColorPrevNextMonth,
+            font: Font.regularSystemFont(13),
+          });
+          spaceLeft--;
+        }
         stack.url = createUrl(
           events[i].startDate.getDate().toString(),
           events[i].startDate.getMonth().toString(),
           events[i].startDate, settings)
-        spaceLeft--;
       }
       const showTime = settings.showEventTime;
       const spaceUsed = formatEvent(stack, events[i], {
