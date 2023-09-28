@@ -26,8 +26,10 @@ function addWidgetTextLine(
   textLine.lineLimit = lineLimit;
   if (typeof font === "string") {
     textLine.font = new Font(font, textSize);
-  } else {
+  } else if (font !== undefined) {
     textLine.font = font;
+  } else if (textSize !== undefined) {
+    textLine.font = Font.systemFont(textSize);
   }
   textLine.textOpacity = opacity;
   switch (align) {

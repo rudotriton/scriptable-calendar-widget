@@ -28,12 +28,40 @@ async function buildEventsView(
   } = {}
 ): Promise<void> {
   const leftStack = stack.addStack();
+  leftStack.layoutVertically();
   // add, spacer to the right side, this pushes event view to the left
   if (horizontalAlign === "left") {
     stack.addSpacer();
   }
 
-  leftStack.layoutVertically();
+  if (events.length == 0 && showMsg) {
+    // No event
+    const noEventStack = leftStack.addStack();
+    noEventStack.setPadding(5, 0, 0, 0);
+    noEventStack.layoutVertically();
+    const checkmark = SFSymbol.named('checkmark.circle').image;
+    
+    const titleStack = noEventStack.addStack()
+    titleStack.centerAlignContent()
+    const formatter = Intl.DateTimeFormat(settings.locale, { day: 'numeric', weekday: 'long', });
+    const parts = formatter.formatToParts(new Date())
+    addWidgetTextLine(parts.find(v => v.type === 'day').value, titleStack, {
+      textColor: settings.textColor,
+      textSize: 30,
+    });
+    titleStack.addSpacer(5)
+    addWidgetTextLine(parts.find(v => v.type === 'weekday').value, titleStack, {
+      textColor: settings.todayCircleColor,
+      textSize: 15,
+    });
+    noEventStack.addSpacer()
+    const img = noEventStack.addImage(checkmark);
+    img.imageSize = new Size(35, 35);
+    img.centerAlignImage();
+    noEventStack.addSpacer();
+    return;
+  }
+
   // center the whole left part of the widget
   if (verticalAlign === "bottom" || verticalAlign === "center") {
     leftStack.addSpacer();
@@ -61,14 +89,13 @@ async function buildEventsView(
         stack = leftStack.addStack();
         stack.layoutVertically();
         groupStack.set(eventDate, stack);
-        // No locale string for "today", don't display it
-        if (eventDate !== 'today') {
-          addWidgetTextLine(eventDate, stack, {
-            textColor: settings.textColorPrevNextMonth,
-            font: Font.regularSystemFont(13),
-          });
-          spaceLeft--;
-        }
+        
+        addWidgetTextLine(eventDate, stack, {
+          textColor: settings.textColorPrevNextMonth,
+          font: Font.regularSystemFont(13),
+        });
+        spaceLeft--;
+        
         stack.url = createUrl(
           events[i].startDate.getDate().toString(),
           events[i].startDate.getMonth().toString(),
@@ -87,12 +114,6 @@ async function buildEventsView(
       }
       i++;
     }
-  } else if (showMsg) {
-    addWidgetTextLine(`No more events.`, leftStack, {
-      textColor: settings.textColor,
-      opacity: settings.eventDateTimeOpacity,
-      font: Font.regularSystemFont(15),
-    });
   }
   // for centering, pushes up from the bottom
   if (verticalAlign === "top" || verticalAlign === "center") {

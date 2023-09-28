@@ -104,8 +104,10 @@ function addWidgetTextLine(
   textLine.lineLimit = lineLimit;
   if (typeof font === "string") {
     textLine.font = new Font(font, textSize);
-  } else {
+  } else if (font !== void 0) {
     textLine.font = font;
+  } else if (textSize !== void 0) {
+    textLine.font = Font.systemFont(textSize);
   }
   textLine.textOpacity = opacity;
   switch (align) {
@@ -656,15 +658,11 @@ function dateToReadableDiff(d1, locale = "en-GB") {
   now.setMilliseconds(0);
   const diff = d1.valueOf() - now.valueOf();
   const dateDiff = Math.floor(diff / (1e3 * 60 * 60 * 24));
-  const formatter = new RelativeDateTimeFormatter();
-  formatter.useNamedDateTimeStyle();
-  formatter.locale = locale;
+  const formatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
   if (dateDiff < 0) {
     return "";
-  } else if (dateDiff == 0) {
-    return "today";
   } else if (dateDiff <= 3) {
-    return formatter.string(d1, now);
+    return formatter.format(dateDiff, "day");
   } else {
     return d1.toLocaleDateString(locale, {
       month: "long",
@@ -689,10 +687,46 @@ async function buildEventsView(
   } = {}
 ) {
   const leftStack = stack.addStack();
+  leftStack.layoutVertically();
   if (horizontalAlign === "left") {
     stack.addSpacer();
   }
-  leftStack.layoutVertically();
+  if (events.length == 0 && showMsg) {
+    const noEventStack = leftStack.addStack();
+    noEventStack.setPadding(5, 0, 0, 0);
+    noEventStack.layoutVertically();
+    const checkmark = SFSymbol.named("checkmark.circle").image;
+    const titleStack = noEventStack.addStack();
+    titleStack.centerAlignContent();
+    const formatter = Intl.DateTimeFormat(settings2.locale, {
+      day: "numeric",
+      weekday: "long",
+    });
+    const parts = formatter.formatToParts(new Date());
+    addWidgetTextLine_default(
+      parts.find((v) => v.type === "day").value,
+      titleStack,
+      {
+        textColor: settings2.textColor,
+        textSize: 30,
+      }
+    );
+    titleStack.addSpacer(5);
+    addWidgetTextLine_default(
+      parts.find((v) => v.type === "weekday").value,
+      titleStack,
+      {
+        textColor: settings2.todayCircleColor,
+        textSize: 15,
+      }
+    );
+    noEventStack.addSpacer();
+    const img = noEventStack.addImage(checkmark);
+    img.imageSize = new Size(35, 35);
+    img.centerAlignImage();
+    noEventStack.addSpacer();
+    return;
+  }
   if (verticalAlign === "bottom" || verticalAlign === "center") {
     leftStack.addSpacer();
   }
@@ -717,13 +751,11 @@ async function buildEventsView(
         stack2 = leftStack.addStack();
         stack2.layoutVertically();
         groupStack.set(eventDate, stack2);
-        if (eventDate !== "today") {
-          addWidgetTextLine_default(eventDate, stack2, {
-            textColor: settings2.textColorPrevNextMonth,
-            font: Font.regularSystemFont(13),
-          });
-          spaceLeft--;
-        }
+        addWidgetTextLine_default(eventDate, stack2, {
+          textColor: settings2.textColorPrevNextMonth,
+          font: Font.regularSystemFont(13),
+        });
+        spaceLeft--;
         stack2.url = createUrl_default(
           events[i].startDate.getDate().toString(),
           events[i].startDate.getMonth().toString(),
@@ -746,12 +778,6 @@ async function buildEventsView(
       }
       i++;
     }
-  } else if (showMsg) {
-    addWidgetTextLine_default(`No more events.`, leftStack, {
-      textColor: settings2.textColor,
-      opacity: settings2.eventDateTimeOpacity,
-      font: Font.regularSystemFont(15),
-    });
   }
   if (verticalAlign === "top" || verticalAlign === "center") {
     leftStack.addSpacer();
