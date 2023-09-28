@@ -7,8 +7,8 @@ import buildLargeWidget from "./buildLargeWidget";
 
 async function buildWidget(settings: Settings): Promise<ListWidget> {
   const widget = new ListWidget();
-  widget.backgroundColor = new Color(settings.widgetBackgroundColor, 1);
-  setWidgetBackground(widget, settings.backgroundImage);
+  widget.backgroundColor = new Color(settings.theme.widgetBackgroundColor, 1);
+  setWidgetBackground(widget, settings.theme.backgroundImage);
   widget.setPadding(16, 16, 16, 16);
 
   const today = new Date();

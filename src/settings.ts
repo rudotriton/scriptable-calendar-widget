@@ -1,3 +1,4 @@
+import { autoTheme, lightTheme, darkTheme } from "themes";
 // get widget params
 const params = JSON.parse(args.widgetParameter) || {};
 
@@ -14,46 +15,22 @@ const defaultSettings: Settings = {
   //   "calshow" is the ios calendar app
   //   "x-fantastical3" for fantastical
   calendarApp: "calshow",
-  // a separate image can be specified per widget in widget params:
-  // Long press on widget -> Edit Widget -> Parameter
-  // parameter config would look like this:
-  // { "bg": "2111.jpg", "view": "events" }
-  backgroundImage: "transparent.jpg",
   // what calendars to show, all if empty or something like: ["Work"]
   calFilter: [],
-  widgetBackgroundColor: "#000000",
-  todayTextColor: "#000000",
   markToday: true,
-  // background color for today
-  todayCircleColor: "#FFB800",
   // background for all other days, only applicable if showEventCircles is true
   // show a circle behind each date that has an event then
   showEventCircles: true,
   // if true, all-day events don't count towards eventCircle intensity value
   discountAllDayEvents: false,
-  eventCircleColor: "#1E5C7B",
-  // color of all the other dates
-  weekdayTextColor: "#ffffff",
-
-  // weekend colors
-  weekendLetters: "#FFB800",
-  weekendLetterOpacity: 1,
-  weekendDates: "#FFB800",
-
   // show smaller text for prev or next month
   smallerPrevNextMonth: false,
-  // text color for prev or next month
-  textColorPrevNextMonth: "#9e9e9e",
-
   // changes some locale specific values, such as weekday letters
   locale: Device.locale(),
-
-  // color for events
-  textColor: "#ffffff",
-  // opacity value for event times
-  eventDateTimeOpacity: 0.7,
   // what the widget shows
   widgetType: "cal",
+  themeName: 'auto',
+  theme: autoTheme,
   // show or hide all day events
   showAllDayEvents: true,
   // show an icon if the event is all day
@@ -87,25 +64,15 @@ const defaultSettings: Settings = {
 export interface Settings {
   debug: boolean;
   calendarApp: string;
-  backgroundImage: string;
   calFilter: string[];
-  widgetBackgroundColor: string;
-  todayTextColor: string;
   markToday: boolean;
-  todayCircleColor: string;
-  weekdayTextColor: string;
   showEventCircles: boolean;
   discountAllDayEvents: boolean;
-  eventCircleColor: string;
   locale: string;
-  weekendLetters: string;
-  weekendLetterOpacity: number;
-  weekendDates: string;
   smallerPrevNextMonth: boolean;
-  textColorPrevNextMonth: string;
-  textColor: string;
-  eventDateTimeOpacity: number;
   widgetType: string;
+  themeName: 'auto' | 'light' | 'dark' | 'custom';
+  theme: ThemeSetting;
   showAllDayEvents: boolean;
   showIconForAllDayEvents: boolean;
   showCalendarBullet: boolean;
@@ -122,11 +89,40 @@ export interface Settings {
   flipped: boolean;
 }
 
-// Merge settings. Latest item takes priority
-const settings = {
-  ...defaultSettings,
-  ...importedSettings,
-  ...params
+export interface ThemeSetting {
+  backgroundImage: string;
+  widgetBackgroundColor: string;
+  textColor: string;
+  todayTextColor: string;
+  textColorPrevNextMonth: string;
+  todayCircleColor: string;
+  weekdayTextColor: string;
+  eventCircleColor: string;
+  weekendLetterColor: string;
+  weekendLetterOpacity: number;
+  weekendDateColor: string;
+  eventDateTimeOpacity: number;
 }
+
+// Merge settings. Latest item takes priority
+const settings: Settings = Object.assign(
+  defaultSettings,
+  importedSettings,
+  params
+);
+
+if (params.bg) settings.theme.backgroundImage = params.bg;
+
+let theme;
+switch (settings.themeName) {
+  case 'dark': theme = darkTheme; break;
+  case 'light': theme = lightTheme; break;
+  default: theme = autoTheme; break;
+}
+settings.theme = Object.assign(
+  theme,
+  importedSettings.theme,
+  params.theme
+);
 
 export default settings;

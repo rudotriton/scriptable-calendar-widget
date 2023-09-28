@@ -14,8 +14,7 @@ function formatEvent(
   stack: WidgetStack,
   event: CalendarEvent,
   {
-    eventDateTimeOpacity,
-    textColor,
+    theme,
     showCalendarBullet,
     showCompleteTitle,
     showEventLocation,
@@ -49,7 +48,7 @@ function formatEvent(
 
   // event title
   addWidgetTextLine(event.title, titleStack, {
-    textColor,
+    textColor: theme.textColor,
     font: Font.mediumSystemFont(13),
     lineLimit: showCompleteTitle ? 0 : 1,
   });
@@ -58,15 +57,15 @@ function formatEvent(
     const icon = titleStack.addImage(iconFullDay());
     icon.imageSize = new Size(15, 15);
     icon.rightAlignImage();
-    icon.tintColor = new Color(textColor);
+    icon.tintColor = new Color(theme.textColor);
   }
     
   lineCount++;
 
   if (showEventLocation && event.location) {
     addWidgetTextLine(event.location, eventLine.addStack(), {
-      textColor,
-      opacity: eventDateTimeOpacity,
+      textColor: theme.textColor,
+      opacity: theme.eventDateTimeOpacity,
       font: Font.mediumSystemFont(12),
       lineLimit: showCompleteTitle ? 0 : 1,
     });
@@ -84,8 +83,8 @@ function formatEvent(
     if (time) {
       const timeStack = eventLine.addStack();
       addWidgetTextLine(time, timeStack, {
-        textColor,
-        opacity: eventDateTimeOpacity,
+        textColor: theme.textColor,
+        opacity: theme.eventDateTimeOpacity,
         font: Font.regularSystemFont(12),
       });
       lineCount++;

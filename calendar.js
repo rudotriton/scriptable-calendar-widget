@@ -24,6 +24,37 @@ var __spreadValues = (a, b) => {
 };
 var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
 
+// src/themes.ts
+var darkTheme = {
+  backgroundImage: "transparent.jpg",
+  widgetBackgroundColor: "#000000",
+  todayTextColor: "#000000",
+  todayCircleColor: "#FFB800",
+  weekdayTextColor: "#ffffff",
+  eventCircleColor: "#1E5C7B",
+  weekendLetterColor: "#FFB800",
+  weekendLetterOpacity: 1,
+  weekendDateColor: "#FFB800",
+  textColorPrevNextMonth: "#9e9e9e",
+  textColor: "#ffffff",
+  eventDateTimeOpacity: 0.7,
+};
+var lightTheme = {
+  backgroundImage: "transparent.jpg",
+  widgetBackgroundColor: "#FFFFFF",
+  todayTextColor: "#000000",
+  todayCircleColor: "#FFB800",
+  weekdayTextColor: "#000000",
+  eventCircleColor: "#a5beca",
+  weekendLetterColor: "#ff6600",
+  weekendLetterOpacity: 1,
+  weekendDateColor: "#ff6600",
+  textColorPrevNextMonth: "#403e3e",
+  textColor: "#000000",
+  eventDateTimeOpacity: 0.7,
+};
+var autoTheme = Device.isUsingDarkAppearance() ? darkTheme : lightTheme;
+
 // src/settings.ts
 var params = JSON.parse(args.widgetParameter) || {};
 var importedSettings = {};
@@ -33,25 +64,15 @@ try {
 var defaultSettings = {
   debug: false,
   calendarApp: "calshow",
-  backgroundImage: "transparent.jpg",
   calFilter: [],
-  widgetBackgroundColor: "#000000",
-  todayTextColor: "#000000",
   markToday: true,
-  todayCircleColor: "#FFB800",
   showEventCircles: true,
   discountAllDayEvents: false,
-  eventCircleColor: "#1E5C7B",
-  weekdayTextColor: "#ffffff",
-  weekendLetters: "#FFB800",
-  weekendLetterOpacity: 1,
-  weekendDates: "#FFB800",
   smallerPrevNextMonth: false,
-  textColorPrevNextMonth: "#9e9e9e",
   locale: Device.locale(),
-  textColor: "#ffffff",
-  eventDateTimeOpacity: 0.7,
   widgetType: "cal",
+  themeName: "auto",
+  theme: autoTheme,
   showAllDayEvents: true,
   showIconForAllDayEvents: true,
   showCalendarBullet: true,
@@ -67,10 +88,21 @@ var defaultSettings = {
   individualDateTargets: false,
   flipped: false,
 };
-var settings = __spreadValues(
-  __spreadValues(__spreadValues({}, defaultSettings), importedSettings),
-  params
-);
+var settings = Object.assign(defaultSettings, importedSettings, params);
+if (params.bg) settings.theme.backgroundImage = params.bg;
+var theme;
+switch (settings.themeName) {
+  case "dark":
+    theme = darkTheme;
+    break;
+  case "light":
+    theme = lightTheme;
+    break;
+  default:
+    theme = autoTheme;
+    break;
+}
+settings.theme = Object.assign(theme, importedSettings.theme, params.theme);
 var settings_default = settings;
 
 // src/setWidgetBackground.ts
@@ -420,7 +452,7 @@ async function buildCalendarView(date, stack, settings2) {
     dateFormatter.string(date).toUpperCase(),
     monthLine,
     {
-      textColor: settings2.textColor,
+      textColor: settings2.theme.textColor,
       textSize: 14,
       font: Font.boldSystemFont(13),
     }
@@ -450,15 +482,15 @@ async function buildCalendarView(date, stack, settings2) {
       if (calendar[i][j] === `${date.getMonth()}/${date.getDate()}`) {
         if (settings2.markToday) {
           const highlightedDate = createDateImage_default(day, {
-            backgroundColor: settings2.todayCircleColor,
-            textColor: settings2.todayTextColor,
+            backgroundColor: settings2.theme.todayCircleColor,
+            textColor: settings2.theme.todayTextColor,
             intensity: 1,
             toFullSize: true,
           });
           dayStack.addImage(highlightedDate);
         } else {
           addWidgetTextLine_default(day, dayStack, {
-            textColor: settings2.todayTextColor,
+            textColor: settings2.theme.todayTextColor,
             font: Font.boldSystemFont(10),
             align: "center",
           });
@@ -472,11 +504,11 @@ async function buildCalendarView(date, stack, settings2) {
         );
         const toFullSize = !settings2.smallerPrevNextMonth || isCurrentMonth;
         let textColor = isWeekend_default(i, settings2.startWeekOnSunday)
-          ? settings2.weekendDates
-          : settings2.weekdayTextColor;
-        if (!isCurrentMonth) textColor = settings2.textColorPrevNextMonth;
+          ? settings2.theme.weekendDateColor
+          : settings2.theme.weekdayTextColor;
+        if (!isCurrentMonth) textColor = settings2.theme.textColorPrevNextMonth;
         const dateImage = createDateImage_default(day, {
-          backgroundColor: settings2.eventCircleColor,
+          backgroundColor: settings2.theme.eventCircleColor,
           textColor,
           intensity: settings2.showEventCircles
             ? eventCounts.get(calendar[i][j]) * intensity
@@ -487,10 +519,10 @@ async function buildCalendarView(date, stack, settings2) {
       } else {
         addWidgetTextLine_default(day, dayStack, {
           textColor: isWeekend_default(i, settings2.startWeekOnSunday)
-            ? settings2.weekendLetters
-            : settings2.textColor,
+            ? settings2.theme.weekendLetterColor
+            : settings2.theme.textColor,
           opacity: isWeekend_default(i, settings2.startWeekOnSunday)
-            ? settings2.weekendLetterOpacity
+            ? settings2.theme.weekendLetterOpacity
             : 1,
           font: Font.boldSystemFont(10),
           align: "center",
@@ -577,8 +609,7 @@ function formatEvent(
   stack,
   event,
   {
-    eventDateTimeOpacity,
-    textColor,
+    theme: theme2,
     showCalendarBullet,
     showCompleteTitle,
     showEventLocation,
@@ -606,7 +637,7 @@ function formatEvent(
     });
   }
   addWidgetTextLine_default(event.title, titleStack, {
-    textColor,
+    textColor: theme2.textColor,
     font: Font.mediumSystemFont(13),
     lineLimit: showCompleteTitle ? 0 : 1,
   });
@@ -615,13 +646,13 @@ function formatEvent(
     const icon = titleStack.addImage(iconAllDay_default());
     icon.imageSize = new Size(15, 15);
     icon.rightAlignImage();
-    icon.tintColor = new Color(textColor);
+    icon.tintColor = new Color(theme2.textColor);
   }
   lineCount++;
   if (showEventLocation && event.location) {
     addWidgetTextLine_default(event.location, eventLine.addStack(), {
-      textColor,
-      opacity: eventDateTimeOpacity,
+      textColor: theme2.textColor,
+      opacity: theme2.eventDateTimeOpacity,
       font: Font.mediumSystemFont(12),
       lineLimit: showCompleteTitle ? 0 : 1,
     });
@@ -638,8 +669,8 @@ function formatEvent(
     if (time) {
       const timeStack = eventLine.addStack();
       addWidgetTextLine_default(time, timeStack, {
-        textColor,
-        opacity: eventDateTimeOpacity,
+        textColor: theme2.textColor,
+        opacity: theme2.eventDateTimeOpacity,
         font: Font.regularSystemFont(12),
       });
       lineCount++;
@@ -707,7 +738,7 @@ async function buildEventsView(
       parts.find((v) => v.type === "day").value,
       titleStack,
       {
-        textColor: settings2.textColor,
+        textColor: settings2.theme.textColor,
         textSize: 30,
       }
     );
@@ -716,7 +747,7 @@ async function buildEventsView(
       parts.find((v) => v.type === "weekday").value,
       titleStack,
       {
-        textColor: settings2.todayCircleColor,
+        textColor: settings2.theme.todayCircleColor,
         textSize: 15,
       }
     );
@@ -752,7 +783,7 @@ async function buildEventsView(
         stack2.layoutVertically();
         groupStack.set(eventDate, stack2);
         addWidgetTextLine_default(eventDate, stack2, {
-          textColor: settings2.textColorPrevNextMonth,
+          textColor: settings2.theme.textColorPrevNextMonth,
           font: Font.regularSystemFont(13),
         });
         spaceLeft--;
@@ -850,8 +881,8 @@ var buildLargeWidget_default = buildLargeWidget;
 // src/buildWidget.ts
 async function buildWidget(settings2) {
   const widget = new ListWidget();
-  widget.backgroundColor = new Color(settings2.widgetBackgroundColor, 1);
-  setWidgetBackground_default(widget, settings2.backgroundImage);
+  widget.backgroundColor = new Color(settings2.theme.widgetBackgroundColor, 1);
+  setWidgetBackground_default(widget, settings2.theme.backgroundImage);
   widget.setPadding(16, 16, 16, 16);
   const today = new Date();
   const globalStack = widget.addStack();

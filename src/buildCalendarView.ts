@@ -33,7 +33,7 @@ async function buildCalendarView(
   // since dates are centered in their squares we need to add some space
   monthLine.addSpacer(4);
   addWidgetTextLine(dateFormatter.string(date).toUpperCase(), monthLine, {
-    textColor: settings.textColor,
+    textColor: settings.theme.textColor,
     textSize: 14,
     font: Font.boldSystemFont(13),
   });
@@ -74,15 +74,15 @@ async function buildCalendarView(
       if (calendar[i][j] === `${date.getMonth()}/${date.getDate()}`) {
         if (settings.markToday) {
           const highlightedDate = createDateImage(day, {
-            backgroundColor: settings.todayCircleColor,
-            textColor: settings.todayTextColor,
+            backgroundColor: settings.theme.todayCircleColor,
+            textColor: settings.theme.todayTextColor,
             intensity: 1,
             toFullSize: true,
           });
           dayStack.addImage(highlightedDate);
         } else {
           addWidgetTextLine(day, dayStack, {
-            textColor: settings.todayTextColor,
+            textColor: settings.theme.todayTextColor,
             font: Font.boldSystemFont(10),
             align: "center",
           });
@@ -92,12 +92,12 @@ async function buildCalendarView(
         const isCurrentMonth = isDateFromBoundingMonth(i, j, date, calendar);
         const toFullSize = !settings.smallerPrevNextMonth || isCurrentMonth;
         let textColor = isWeekend(i, settings.startWeekOnSunday)
-          ? settings.weekendDates
-          : settings.weekdayTextColor;
-        if (!isCurrentMonth) textColor = settings.textColorPrevNextMonth;
+          ? settings.theme.weekendDateColor
+          : settings.theme.weekdayTextColor;
+        if (!isCurrentMonth) textColor = settings.theme.textColorPrevNextMonth;
 
         const dateImage = createDateImage(day, {
-          backgroundColor: settings.eventCircleColor,
+          backgroundColor: settings.theme.eventCircleColor,
           textColor: textColor,
           intensity: settings.showEventCircles
             ? eventCounts.get(calendar[i][j]) * intensity
@@ -109,10 +109,10 @@ async function buildCalendarView(
         // first line and empty dates from other months
         addWidgetTextLine(day, dayStack, {
           textColor: isWeekend(i, settings.startWeekOnSunday)
-            ? settings.weekendLetters
-            : settings.textColor,
+            ? settings.theme.weekendLetterColor
+            : settings.theme.textColor,
           opacity: isWeekend(i, settings.startWeekOnSunday)
-            ? settings.weekendLetterOpacity
+            ? settings.theme.weekendLetterOpacity
             : 1,
           font: Font.boldSystemFont(10),
           align: "center",

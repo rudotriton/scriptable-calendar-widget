@@ -46,12 +46,12 @@ async function buildEventsView(
     const formatter = Intl.DateTimeFormat(settings.locale, { day: 'numeric', weekday: 'long', });
     const parts = formatter.formatToParts(new Date())
     addWidgetTextLine(parts.find(v => v.type === 'day').value, titleStack, {
-      textColor: settings.textColor,
+      textColor: settings.theme.textColor,
       textSize: 30,
     });
     titleStack.addSpacer(5)
     addWidgetTextLine(parts.find(v => v.type === 'weekday').value, titleStack, {
-      textColor: settings.todayCircleColor,
+      textColor: settings.theme.todayCircleColor,
       textSize: 15,
     });
     noEventStack.addSpacer()
@@ -91,7 +91,7 @@ async function buildEventsView(
         groupStack.set(eventDate, stack);
         
         addWidgetTextLine(eventDate, stack, {
-          textColor: settings.textColorPrevNextMonth,
+          textColor: settings.theme.textColorPrevNextMonth,
           font: Font.regularSystemFont(13),
         });
         spaceLeft--;
