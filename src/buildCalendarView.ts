@@ -15,11 +15,19 @@ import { Settings } from "./settings";
 async function buildCalendarView(
   date: Date,
   stack: WidgetStack,
-  settings: Settings
+  settings: Settings,
+  {
+    verticalAlign = 'center'
+  }: {
+    verticalAlign?: 'top' | 'center'
+  } = {}
 ): Promise<void> {
   const rightStack = stack.addStack();
-  rightStack.addSpacer();
   rightStack.layoutVertically();
+
+  if (verticalAlign === 'center') {
+    rightStack.addSpacer();
+  }
 
   const dateFormatter = new DateFormatter();
   dateFormatter.dateFormat = "MMMM";
@@ -120,7 +128,9 @@ async function buildCalendarView(
       }
     }
   }
-  rightStack.addSpacer();
+  if (verticalAlign === 'center') {
+    rightStack.addSpacer();
+  }
 }
 
 export default buildCalendarView;

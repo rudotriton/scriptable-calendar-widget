@@ -24,8 +24,11 @@ async function buildLargeWidget(
   await buildEventsView(leftSideEvents, leftSide, settings, {
     lineSpaceLimit: 16,
     eventSpacer: 6,
+    verticalAlign: "top",
   });
-  await buildCalendarView(date, rightSide, settings);
+  await buildCalendarView(date, rightSide, settings, {
+    verticalAlign: 'top',
+  });
   // add space between the calendar and any events below it
   rightSide.addSpacer();
   await buildEventsView(rightSideEvents, rightSide, settings, {

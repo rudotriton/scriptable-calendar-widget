@@ -438,10 +438,17 @@ function createUrl(day, month, date, settings2) {
 var createUrl_default = createUrl;
 
 // src/buildCalendarView.ts
-async function buildCalendarView(date, stack, settings2) {
+async function buildCalendarView(
+  date,
+  stack,
+  settings2,
+  { verticalAlign = "center" } = {}
+) {
   const rightStack = stack.addStack();
-  rightStack.addSpacer();
   rightStack.layoutVertically();
+  if (verticalAlign === "center") {
+    rightStack.addSpacer();
+  }
   const dateFormatter = new DateFormatter();
   dateFormatter.dateFormat = "MMMM";
   dateFormatter.locale = settings2.locale.split("-")[0];
@@ -530,7 +537,9 @@ async function buildCalendarView(date, stack, settings2) {
       }
     }
   }
-  rightStack.addSpacer();
+  if (verticalAlign === "center") {
+    rightStack.addSpacer();
+  }
 }
 var buildCalendarView_default = buildCalendarView;
 
@@ -866,8 +875,11 @@ async function buildLargeWidget(date, events, stack, settings2) {
   await buildEventsView_default(leftSideEvents, leftSide, settings2, {
     lineSpaceLimit: 16,
     eventSpacer: 6,
+    verticalAlign: "top",
   });
-  await buildCalendarView_default(date, rightSide, settings2);
+  await buildCalendarView_default(date, rightSide, settings2, {
+    verticalAlign: "top",
+  });
   rightSide.addSpacer();
   await buildEventsView_default(rightSideEvents, rightSide, settings2, {
     lineSpaceLimit: 12,
