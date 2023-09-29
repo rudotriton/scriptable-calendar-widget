@@ -19,6 +19,8 @@ const darkTheme: ThemeSetting = {
   textColor: "#ffffff",
   // opacity value for event times
   eventDateTimeOpacity: 0.7,
+  // opacity value for event item background in event view
+  eventBackgroundOpacity: 0.3,
 }
 
 const lightTheme: ThemeSetting = {
@@ -40,6 +42,8 @@ const lightTheme: ThemeSetting = {
   textColor: "#000000",
   // opacity value for event times
   eventDateTimeOpacity: 0.7,
+  // opacity value for event item background in event view
+  eventBackgroundOpacity: 0.3,
 }
 
 const autoTheme = Device.isUsingDarkAppearance()

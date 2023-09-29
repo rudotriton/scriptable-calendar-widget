@@ -38,6 +38,7 @@ var darkTheme = {
   textColorPrevNextMonth: "#9e9e9e",
   textColor: "#ffffff",
   eventDateTimeOpacity: 0.7,
+  eventBackgroundOpacity: 0.3,
 };
 var lightTheme = {
   backgroundImage: "transparent.jpg",
@@ -52,6 +53,7 @@ var lightTheme = {
   textColorPrevNextMonth: "#403e3e",
   textColor: "#000000",
   eventDateTimeOpacity: 0.7,
+  eventBackgroundOpacity: 0.3,
 };
 var autoTheme = Device.isUsingDarkAppearance() ? darkTheme : lightTheme;
 
@@ -677,7 +679,10 @@ function formatEvent(
   }
 ) {
   const eventLine = stack.addStack();
-  const backgroundColor = new Color(event.calendar.color.hex, 0.3);
+  const backgroundColor = new Color(
+    event.calendar.color.hex,
+    theme2.eventBackgroundOpacity
+  );
   eventLine.backgroundColor = backgroundColor;
   eventLine.layoutVertically();
   eventLine.cornerRadius = 5;

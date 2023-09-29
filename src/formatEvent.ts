@@ -25,7 +25,7 @@ function formatEvent(
   }: Partial<Settings>
 ): number {
   const eventLine = stack.addStack();
-  const backgroundColor = new Color(event.calendar.color.hex, 0.3);
+  const backgroundColor = new Color(event.calendar.color.hex, theme.eventBackgroundOpacity);
   eventLine.backgroundColor = backgroundColor;
   eventLine.layoutVertically();
   eventLine.cornerRadius = 5;

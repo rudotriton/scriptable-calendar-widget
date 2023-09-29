@@ -107,6 +107,7 @@ export interface ThemeSetting {
   weekendLetterOpacity: number;
   weekendDateColor: string;
   eventDateTimeOpacity: number;
+  eventBackgroundOpacity: number;
 }
 
 // Merge settings. Latest item takes priority

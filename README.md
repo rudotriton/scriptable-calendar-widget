@@ -99,6 +99,7 @@ module.exports = {
 - `textColorPrevNextMonth` - text color for previous or next month
 - `textColor` - color of all the other text
 - `eventDateTimeOpacity` - opacity value for event times
+- `eventBackgroundOpacity` - opacity value for event item background in event view
 
 ## Small Widgets
 
