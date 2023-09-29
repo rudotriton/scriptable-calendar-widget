@@ -1,4 +1,4 @@
-import settings from "./settings";
+import settings, { error } from "./settings";
 import buildWidget from "./buildWidget";
 
 async function main() {
@@ -6,6 +6,10 @@ async function main() {
     const widget = await buildWidget(settings);
     Script.setWidget(widget);
     Script.complete();
+  } else if (config.runsInApp && error !== '') {
+    const alert = new Alert();
+    alert.message = error;
+    await alert.presentAlert();
   } else if (settings.debug) {
     Script.complete();
     const widget = await buildWidget(settings);
