@@ -50,6 +50,7 @@ You can write anything in the settings script as long as the script is exporting
 - `discountAllDayEvents` - if true, all-day events don't count towards eventCircle intensity value
 - `smallerPrevNextMonth` - date size for previous or next month
 - `locale` - a Unicode locale identifier string. Default follow device setting.
+- `fontSize` - specify font size (`small`, `medium` or `large`) for calendar text. Default is `medium`
 - `widgetType` - for small widgets it determines which side to show. This would be set through widget parameters in order to set it per widget basis, rather than setting here and having all small widgets be the same type. (check: [Small widgets](#small-widgets))
 - `themeName` - `light`, `dark` or `auto`. `auto` will follow device setting
 - `theme` - theme object containing custom theme settings. See [Theme Settings](#theme-settings) for available settings

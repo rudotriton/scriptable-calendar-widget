@@ -40,10 +40,14 @@ async function buildCalendarView(
   const monthLine = rightStack.addStack();
   // since dates are centered in their squares we need to add some space
   monthLine.addSpacer(4);
+  const monthFontSize = settings.fontSize === 'small' 
+    ? 12 
+    : settings.fontSize === 'medium' 
+      ? 14 
+      : 16;
   addWidgetTextLine(dateFormatter.string(date).toUpperCase(), monthLine, {
     textColor: settings.theme.textColor,
-    textSize: 14,
-    font: Font.boldSystemFont(13),
+    font: Font.boldSystemFont(monthFontSize),
   });
 
   const calendarStack = rightStack.addStack();
@@ -60,6 +64,12 @@ async function buildCalendarView(
     daysFromNextMonth,
     settings
   );
+
+  const fontSize = settings.fontSize === 'small' 
+    ? 10 
+    : settings.fontSize === 'medium' 
+      ? 11 
+      : 12;
 
   for (let i = 0; i < calendar.length; i += 1) {
     const weekdayStack = calendarStack.addStack();
@@ -86,12 +96,13 @@ async function buildCalendarView(
             textColor: settings.theme.todayTextColor,
             intensity: 1,
             toFullSize: true,
+            textSize: settings.fontSize,
           });
           dayStack.addImage(highlightedDate);
         } else {
           addWidgetTextLine(day, dayStack, {
             textColor: settings.theme.todayTextColor,
-            font: Font.boldSystemFont(10),
+            font: Font.boldSystemFont(fontSize),
             align: "center",
           });
         }
@@ -112,6 +123,7 @@ async function buildCalendarView(
             : 0,
           toFullSize,
           style: settings.eventCircleStyle,
+          textSize: settings.fontSize,
         });
         dayStack.addImage(dateImage);
       } else {
@@ -123,7 +135,7 @@ async function buildCalendarView(
           opacity: isWeekend(i, settings.startWeekOnSunday)
             ? settings.theme.weekendLetterOpacity
             : 1,
-          font: Font.boldSystemFont(10),
+          font: Font.boldSystemFont(fontSize),
           align: "center",
         });
       }

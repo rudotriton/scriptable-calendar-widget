@@ -28,6 +28,8 @@ const defaultSettings: Settings = {
   smallerPrevNextMonth: false,
   // changes some locale specific values, such as weekday letters
   locale: Device.locale(),
+  // specify font size for calendar text
+  fontSize: 'medium',
   // what the widget shows
   widgetType: "cal",
   themeName: 'auto',
@@ -71,6 +73,7 @@ export interface Settings {
   eventCircleStyle: 'circle' | 'dot';
   discountAllDayEvents: boolean;
   locale: string;
+  fontSize: 'small' | 'medium' | 'large';
   smallerPrevNextMonth: boolean;
   widgetType: string;
   themeName: 'auto' | 'light' | 'dark' | 'custom';

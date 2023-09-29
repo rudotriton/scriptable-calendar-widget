@@ -71,6 +71,7 @@ var defaultSettings = {
   discountAllDayEvents: false,
   smallerPrevNextMonth: false,
   locale: Device.locale(),
+  fontSize: "medium",
   widgetType: "cal",
   themeName: "auto",
   theme: autoTheme,
@@ -354,12 +355,32 @@ var countEvents_default = countEvents;
 // src/createDateImage.ts
 function createDateImage(
   text,
-  { backgroundColor, textColor, intensity, toFullSize, style = "circle" }
+  {
+    backgroundColor,
+    textColor,
+    intensity,
+    toFullSize,
+    textSize = "medium",
+    style = "circle",
+  }
 ) {
-  const size = toFullSize ? 50 : 35;
+  const largeSize = 50;
+  const smallSize = 35;
+  const size = toFullSize ? largeSize : smallSize;
+  const largeTextFactor = 0.65;
+  const mediumTextFactor = 0.55;
+  const smallTextFactor = 0.45;
+  let textSizeFactor = mediumTextFactor;
+  if (textSize === "small") {
+    textSizeFactor = smallTextFactor;
+  } else if (textSize === "medium") {
+    textSizeFactor = mediumTextFactor;
+  } else if (textSize === "large") {
+    textSizeFactor = largeTextFactor;
+  }
   const drawing = new DrawContext();
   drawing.respectScreenScale = true;
-  const contextSize = 50;
+  const contextSize = largeSize;
   drawing.size = new Size(contextSize, contextSize);
   drawing.opaque = false;
   drawing.setFillColor(new Color(backgroundColor, intensity));
@@ -383,14 +404,14 @@ function createDateImage(
       )
     );
   }
-  drawing.setFont(Font.boldSystemFont(size * 0.5));
+  drawing.setFont(Font.boldSystemFont(size * textSizeFactor));
   drawing.setTextAlignedCenter();
   drawing.setTextColor(new Color(textColor, 1));
   const textBox = new Rect(
     (contextSize - size) / 2,
-    (contextSize - size * 0.5) / 2 - 3,
+    (contextSize - size * textSizeFactor) / 2 - 3,
     size,
-    size * 0.5
+    size * textSizeFactor
   );
   drawing.drawTextInRect(text, textBox);
   return drawing.getImage();
@@ -468,13 +489,18 @@ async function buildCalendarView(
   const spacing = config.widgetFamily === "small" ? 18 : 19;
   const monthLine = rightStack.addStack();
   monthLine.addSpacer(4);
+  const monthFontSize =
+    settings2.fontSize === "small"
+      ? 12
+      : settings2.fontSize === "medium"
+      ? 14
+      : 16;
   addWidgetTextLine_default(
     dateFormatter.string(date).toUpperCase(),
     monthLine,
     {
       textColor: settings2.theme.textColor,
-      textSize: 14,
-      font: Font.boldSystemFont(13),
+      font: Font.boldSystemFont(monthFontSize),
     }
   );
   const calendarStack = rightStack.addStack();
@@ -487,6 +513,12 @@ async function buildCalendarView(
     daysFromNextMonth,
     settings2
   );
+  const fontSize =
+    settings2.fontSize === "small"
+      ? 10
+      : settings2.fontSize === "medium"
+      ? 11
+      : 12;
   for (let i = 0; i < calendar.length; i += 1) {
     const weekdayStack = calendarStack.addStack();
     weekdayStack.layoutVertically();
@@ -506,12 +538,13 @@ async function buildCalendarView(
             textColor: settings2.theme.todayTextColor,
             intensity: 1,
             toFullSize: true,
+            textSize: settings2.fontSize,
           });
           dayStack.addImage(highlightedDate);
         } else {
           addWidgetTextLine_default(day, dayStack, {
             textColor: settings2.theme.todayTextColor,
-            font: Font.boldSystemFont(10),
+            font: Font.boldSystemFont(fontSize),
             align: "center",
           });
         }
@@ -535,6 +568,7 @@ async function buildCalendarView(
             : 0,
           toFullSize,
           style: settings2.eventCircleStyle,
+          textSize: settings2.fontSize,
         });
         dayStack.addImage(dateImage);
       } else {
@@ -545,7 +579,7 @@ async function buildCalendarView(
           opacity: isWeekend_default(i, settings2.startWeekOnSunday)
             ? settings2.theme.weekendLetterOpacity
             : 1,
-          font: Font.boldSystemFont(10),
+          font: Font.boldSystemFont(fontSize),
           align: "center",
         });
       }
