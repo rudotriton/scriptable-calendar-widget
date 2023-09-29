@@ -67,6 +67,7 @@ var defaultSettings = {
   calFilter: [],
   markToday: true,
   showEventCircles: true,
+  eventCircleStyle: "circle",
   discountAllDayEvents: false,
   smallerPrevNextMonth: false,
   locale: Device.locale(),
@@ -353,7 +354,7 @@ var countEvents_default = countEvents;
 // src/createDateImage.ts
 function createDateImage(
   text,
-  { backgroundColor, textColor, intensity, toFullSize }
+  { backgroundColor, textColor, intensity, toFullSize, style = "circle" }
 ) {
   const size = toFullSize ? 50 : 35;
   const drawing = new DrawContext();
@@ -362,14 +363,26 @@ function createDateImage(
   drawing.size = new Size(contextSize, contextSize);
   drawing.opaque = false;
   drawing.setFillColor(new Color(backgroundColor, intensity));
-  drawing.fillEllipse(
-    new Rect(
-      (contextSize - (size - 2)) / 2,
-      (contextSize - (size - 2)) / 2,
-      size - 2,
-      size - 2
-    )
-  );
+  if (style === "circle") {
+    drawing.fillEllipse(
+      new Rect(
+        (contextSize - (size - 2)) / 2,
+        (contextSize - (size - 2)) / 2,
+        size - 2,
+        size - 2
+      )
+    );
+  } else if (style === "dot") {
+    const dotSize = contextSize / 5;
+    drawing.fillEllipse(
+      new Rect(
+        contextSize / 2 - dotSize / 2,
+        contextSize - dotSize,
+        dotSize,
+        dotSize
+      )
+    );
+  }
   drawing.setFont(Font.boldSystemFont(size * 0.5));
   drawing.setTextAlignedCenter();
   drawing.setTextColor(new Color(textColor, 1));
@@ -521,6 +534,7 @@ async function buildCalendarView(
             ? eventCounts.get(calendar[i][j]) * intensity
             : 0,
           toFullSize,
+          style: settings2.eventCircleStyle,
         });
         dayStack.addImage(dateImage);
       } else {

@@ -18,9 +18,10 @@ const defaultSettings: Settings = {
   // what calendars to show, all if empty or something like: ["Work"]
   calFilter: [],
   markToday: true,
-  // background for all other days, only applicable if showEventCircles is true
   // show a circle behind each date that has an event then
   showEventCircles: true,
+  // circle background style or a dot below text style
+  eventCircleStyle: 'circle',
   // if true, all-day events don't count towards eventCircle intensity value
   discountAllDayEvents: false,
   // show smaller text for prev or next month
@@ -67,6 +68,7 @@ export interface Settings {
   calFilter: string[];
   markToday: boolean;
   showEventCircles: boolean;
+  eventCircleStyle: 'circle' | 'dot';
   discountAllDayEvents: boolean;
   locale: string;
   smallerPrevNextMonth: boolean;

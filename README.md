@@ -46,6 +46,7 @@ You can write anything in the settings script as long as the script is exporting
 - `calFilter` - Optionally an array of calendars to show, shows all calendars if empty. Can be supplied as a widget parameter to only affect that particular widget.
 - `markToday` - show a circle around today or not
 - `showEventCircles` - adds colored background for all days that have an event. The color intensity is based roughly on how many events take place that day.
+- `eventCircleStyle` - `circle` or `dot` style for indicating event. `circle` will have a circle background. `dot` will show a dot below the day.
 - `discountAllDayEvents` - if true, all-day events don't count towards eventCircle intensity value
 - `smallerPrevNextMonth` - date size for previous or next month
 - `locale` - a Unicode locale identifier string. Default follow device setting.

@@ -9,11 +9,13 @@ function createDateImage(
     textColor,
     intensity,
     toFullSize,
+    style = 'circle',
   }: {
     backgroundColor: string;
     textColor: string;
     intensity: number;
     toFullSize: boolean;
+    style?: 'circle' | 'dot';
   }
 ): Image {
   const size = toFullSize ? 50 : 35;
@@ -29,18 +31,30 @@ function createDateImage(
   // circle color
   drawing.setFillColor(new Color(backgroundColor, intensity));
 
-  // so that edges stay round and are not clipped by the box
-  // 50 48 1
-  // (contextSize - (size - 2)) / 2
-  // size - 2 makes them a bit smaller than the drawing context
-  drawing.fillEllipse(
-    new Rect(
-      (contextSize - (size - 2)) / 2,
-      (contextSize - (size - 2)) / 2,
-      size - 2,
-      size - 2
-    )
-  );
+  if (style === 'circle') {
+    // so that edges stay round and are not clipped by the box
+    // 50 48 1
+    // (contextSize - (size - 2)) / 2
+    // size - 2 makes them a bit smaller than the drawing context
+    drawing.fillEllipse(
+      new Rect(
+        (contextSize - (size - 2)) / 2,
+        (contextSize - (size - 2)) / 2,
+        size - 2,
+        size - 2
+      )
+    );
+  } else if (style === 'dot') {
+    const dotSize = contextSize / 5;
+    drawing.fillEllipse(
+      new Rect(
+        contextSize / 2 - dotSize / 2, // center the dot
+        contextSize - dotSize, // below the text
+        dotSize,
+        dotSize,
+      )
+    );
+  }
 
   drawing.setFont(Font.boldSystemFont(size * 0.5));
   drawing.setTextAlignedCenter();

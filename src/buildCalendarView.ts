@@ -111,6 +111,7 @@ async function buildCalendarView(
             ? eventCounts.get(calendar[i][j]) * intensity
             : 0,
           toFullSize,
+          style: settings.eventCircleStyle,
         });
         dayStack.addImage(dateImage);
       } else {
