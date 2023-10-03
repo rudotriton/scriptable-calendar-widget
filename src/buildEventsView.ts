@@ -15,9 +15,9 @@ async function buildEventsView(
   settings: Settings,
   {
     horizontalAlign = "left",
-    verticalAlign = "center",
+    verticalAlign = "top",
     eventSpacer = 4,
-    lineSpaceLimit = 7,
+    lineSpaceLimit = 8,
     showMsg = true,
   }: {
     horizontalAlign?: string;
@@ -29,6 +29,7 @@ async function buildEventsView(
 ): Promise<void> {
   const leftStack = stack.addStack();
   leftStack.layoutVertically();
+  leftStack.setPadding(5, 0, 0, 0);
   // add, spacer to the right side, this pushes event view to the left
   if (horizontalAlign === "left") {
     stack.addSpacer();
@@ -109,7 +110,7 @@ async function buildEventsView(
       });
       spaceLeft -= spaceUsed;
       // don't add a spacer after the last event
-      if (spaceLeft > 0 && i < numEvents) {
+      if (spaceLeft > 0 && i < (numEvents - 1)) {
         stack.addSpacer(eventSpacer);
       }
       i++;

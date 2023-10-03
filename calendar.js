@@ -785,14 +785,15 @@ async function buildEventsView(
   settings2,
   {
     horizontalAlign = "left",
-    verticalAlign = "center",
+    verticalAlign = "top",
     eventSpacer = 4,
-    lineSpaceLimit = 7,
+    lineSpaceLimit = 8,
     showMsg = true,
   } = {}
 ) {
   const leftStack = stack.addStack();
   leftStack.layoutVertically();
+  leftStack.setPadding(5, 0, 0, 0);
   if (horizontalAlign === "left") {
     stack.addSpacer();
   }
@@ -878,7 +879,7 @@ async function buildEventsView(
         })
       );
       spaceLeft -= spaceUsed;
-      if (spaceLeft > 0 && i < numEvents) {
+      if (spaceLeft > 0 && i < numEvents - 1) {
         stack2.addSpacer(eventSpacer);
       }
       i++;
