@@ -27,7 +27,7 @@ const defaultSettings: Settings = {
   // show smaller text for prev or next month
   smallerPrevNextMonth: false,
   // changes some locale specific values, such as weekday letters
-  locale: Device.locale(),
+  locale: 'en-GB',
   // specify font size for calendar text
   fontSize: 'medium',
   // what the widget shows

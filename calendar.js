@@ -72,7 +72,7 @@ var defaultSettings = {
   eventCircleStyle: "circle",
   discountAllDayEvents: false,
   smallerPrevNextMonth: false,
-  locale: Device.locale(),
+  locale: "en-GB",
   fontSize: "medium",
   widgetType: "cal",
   themeName: "auto",
