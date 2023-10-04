@@ -1,3 +1,7 @@
+**As of October 2023 this project is now archived. However, there is a continuation with even more amazing features over at [ReinforceZwei/scriptable-calendar-widget](https://github.com/ReinforceZwei/scriptable-calendar-widget).**
+
+---
+
 <p align="center" >
     <img alt="scriptable calendar" src ="./assets/scriptable-calendar-widget.jpg">
 </p>
