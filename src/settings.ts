@@ -1,21 +1,11 @@
 import { autoTheme, lightTheme, darkTheme } from "themes";
-
-let error: string = '';
-
 // get widget params
-let params: any = {};
-try {
-  params = JSON.parse(args.widgetParameter) || {};
-} catch(err) {
-  error = `Error loading parameter setting:\n ${err}\nPlease review and fix your settings`;
-}
+const params = JSON.parse(args.widgetParameter) || {};
 
 let importedSettings: any = {};
 try {
   importedSettings = importModule('calendar-settings');
-} catch(err) {
-  error = `Error loading calendar-settings script:\n ${err}\nPlease review and fix your settings`;
-}
+} catch {}
 
 const defaultSettings: Settings = {
   // set to true to initially give Scriptable calendar access
@@ -142,4 +132,3 @@ settings.theme = Object.assign(
 );
 
 export default settings;
-export { error }

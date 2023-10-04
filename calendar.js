@@ -58,23 +58,11 @@ var lightTheme = {
 var autoTheme = Device.isUsingDarkAppearance() ? darkTheme : lightTheme;
 
 // src/settings.ts
-var error = "";
-var params = {};
-try {
-  params = JSON.parse(args.widgetParameter) || {};
-} catch (err) {
-  error = `Error loading parameter setting:
- ${err}
-Please review and fix your settings`;
-}
+var params = JSON.parse(args.widgetParameter) || {};
 var importedSettings = {};
 try {
   importedSettings = importModule("calendar-settings");
-} catch (err) {
-  error = `Error loading calendar-settings script:
- ${err}
-Please review and fix your settings`;
-}
+} catch (e) {}
 var defaultSettings = {
   debug: false,
   calendarApp: "calshow",
@@ -997,10 +985,6 @@ async function main() {
     const widget = await buildWidget_default(settings_default);
     Script.setWidget(widget);
     Script.complete();
-  } else if (config.runsInApp && error !== "") {
-    const alert = new Alert();
-    alert.message = error;
-    await alert.presentAlert();
   } else if (settings_default.debug) {
     Script.complete();
     const widget = await buildWidget_default(settings_default);
