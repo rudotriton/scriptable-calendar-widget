@@ -8,6 +8,12 @@
 - [Large Widgets](#large-widgets)
 - [Development](#development)
 
+# *** iOS 17 cannot grant calendar permission!
+
+There is an issue on iOS 17 that will prevent Scriptable to ask for calendar access if you have never grant calendar permission to Scriptable before iOS 17 upgrade. Instead, it will just show an error complaining no calendar permission. (see [offical forums](https://talk.automators.fm/t/calendar-access-not-working-on-new-device/16565) and [reddit](https://www.reddit.com/r/Scriptable/comments/16rphf7/how_do_restore_calendar_access/))
+
+There is no fix or workaround on this issue. We will have to wait for Scriptable to update the app.
+
 ## Setting Up
 
 - Copy the script in [calendar.js](./calendar.js) to a new script in Scriptable app.
